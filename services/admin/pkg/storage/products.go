@@ -5,7 +5,7 @@ import (
 )
 
 func ViewAllProducts() ([]models.Product, error) {
-	rows, err := db.Query(`select * from products where "Id" = 1`)
+	rows, err := db.Query(`select * from products`)
 
 	if err != nil {
 		return nil, err

@@ -1,16 +1,16 @@
 package app
 
 import (
-	"diploma/db_configs"
-	"diploma/services/admin/pkg/handlers"
 	"diploma/services/admin/pkg/storage"
+	"diploma/services/admin/pkg/handlers"
 	"fmt"
 	"log"
 	"net/http"
 )
 
-func LaunchAdminService(db_config *db_configs.DBConfig) {
-	err := storage.New(db_config)
+func LaunchAdminService() {
+	storage.PostgresCfg.GetConfig("admin")
+	err := storage.New()
 	if err != nil {
 		log.Fatal(err)
 	}

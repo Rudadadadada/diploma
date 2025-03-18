@@ -1,9 +1,13 @@
 package main
 
 import (
-	"diploma/services/admin/pkg/app"
+	admin 	 "diploma/services/admin/pkg/app"
+	customer "diploma/services/customer/pkg/app"
 )
 
 func main() {
-    app.LaunchAdminService()
+    go admin.Launch()
+	go customer.Launch()
+
+	select {}
 }

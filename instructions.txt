@@ -1,0 +1,5 @@
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest 
+migrate -path services/admin/pkg/migrations -database "postgres://USERNAME:PASSWORD@localhost:5432/postgres?sslmode=disable" up
+
+psql -U rudadadadada -d postgres
+\i services/admin/pkg/storage/init_admin_postgres.sql

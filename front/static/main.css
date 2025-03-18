@@ -1,0 +1,80 @@
+body {
+    background-color: Ivory;
+}
+
+h1, h2, label, .submit, .submit_delete, button, p, #answer_button {
+    font-family: Helvetica, Helvetica, serif;
+    margin: 0 auto;
+    display: block;
+    width: fit-content;
+}
+
+h1 {
+    margin-top: 5%;
+    color: DimGrey;
+}
+
+h2 {
+    margin-top: 3%;
+}
+
+h2, label, table, .submit, .submit_delete, p {
+    color: DimGrey;
+}
+
+#subscription_end {
+    color: DimGrey;
+}
+
+button, .submit, .submit_delete, #answer_button {
+    background-color: gray;
+    color: white;
+    margin-bottom: 0.5%;
+    border-radius: 8pt;
+    border-color: #141414;
+    text-align: center;
+    font-size: 18pt;
+}
+
+button, #answer_button {
+    width: 15%;
+    height: 50pt;
+}
+
+.submit, .submit_delete {
+    width: 50%;
+    height: 30pt;
+}
+
+button:hover, #answer_button:hover {
+    background-color: #404040;
+}
+
+.submit:hover {
+    background-color: #75a301;
+}
+
+.submit_delete:hover {
+    background-color: #d0142c;
+}
+
+.input_field {
+    background-color: #2e2e2e;
+    margin-left: 2.5%;
+    margin-bottom: 5pt;
+    border-color: white;
+    border-radius: 4pt;
+    color: white;
+    font-family: Helvetica, Helvetica, serif;
+    padding: 5pt;
+}
+
+.forms {
+    background-color: #2e2e2e;
+    border-radius: 8pt;
+    padding-bottom: 15pt;
+}
+
+.forms h2, .tables h2 {
+    margin-top: 15pt;
+}

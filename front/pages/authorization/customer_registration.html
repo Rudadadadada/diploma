@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/main.css">
+    <title>Регистрация покупателя</title>
+    <style>
+        form {
+            width: 300px;
+            margin: 0 auto;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        input[type="email"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        .form-container {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Регистрация покупателя</h2>
+    <form action="/registration/customer" method="post">
+        <label for="first-name">Имя:</label>
+        <input type="text" id="first-name" name="first-name" required>
+
+        <label for="last-name">Фамилия:</label>
+        <input type="text" id="last-name" name="last-name" required>
+
+        <label for="email">Электронная почта:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="password">Пароль:</label>
+        <input type="password" id="password" name="password" required>
+
+        <button style="width: 100%;" type="submit">Зарегистрироваться</button>
+    </form>
+    <form action="/authorization/customer" method="get">
+        <button style="width: 100%;">Авторизоваться</button>
+    </form>
+</div>
+
+</body>
+</html>

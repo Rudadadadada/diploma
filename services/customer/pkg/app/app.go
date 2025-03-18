@@ -20,7 +20,8 @@ func Launch() {
 
 	router.Handle("/static/*", http.StripPrefix("/static", http.FileServer(http.Dir("front/static/"))))
 	
-	router.Get("/customer", handlers.CustomerPage)
+	router.With(handlers.JWTMiddleware).Get("/customer", handlers.CustomerPage)
+	router.With(handlers.JWTMiddleware).Get("/customer/logout", handlers.Logout)
 
 	// http.HandleFunc("/customer", handlers.CreateProduct)
 	// http.HandleFunc("/customer", handlers.EditProduct)
@@ -29,7 +30,7 @@ func Launch() {
 	// http.HandleFunc("/categories/create", handlers.CreateCategory)
 	// http.HandleFunc("/categories/edit", handlers.EditCategory)
 
-	fmt.Println("Server is running on port 8081")
+	fmt.Println("Customer server is running on port 8081")
 	if err := http.ListenAndServe(":8081", router); err != nil {
 		log.Fatalf("failed to start server: %v", err)
 	}

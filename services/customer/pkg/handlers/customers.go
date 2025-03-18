@@ -1,30 +1,18 @@
 package handlers
 
-// import (
-// 	"diploma/services/custome/pkg/models"
-// 	"encoding/json"
-// 	"log"
-// 	"net/http"
-// )
+import (
+	"net/http"
+	"time"
+)
 
-// func CreateCategory(w http.ResponseWriter, r *http.Request) {
-// 	var category models.Category
-// 	if err := json.NewDecoder(r.Body).Decode(&category); err != nil {
-// 		http.Error(w, err.Error(), http.StatusBadRequest)
-// 		return
-// 	}
+func Logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Value:    "",
+		Expires:  time.Now().Add(-1 * time.Hour),
+		HttpOnly: true,
+		Path:     "/",
+	})
 
-// 	log.Print("create category")
-// 	json.NewEncoder(w).Encode(category)
-// }
-
-// func EditCategory(w http.ResponseWriter, r *http.Request) {
-// 	var category models.Category
-// 	if err := json.NewDecoder(r.Body).Decode(&category); err != nil {
-// 		http.Error(w, err.Error(), http.StatusBadRequest)
-// 		return
-// 	}
-
-// 	log.Print("edit category")
-// 	json.NewEncoder(w).Encode(category)
-// }
+	http.Redirect(w, r, "http://localhost:8082/authorization/customer", http.StatusSeeOther)
+}

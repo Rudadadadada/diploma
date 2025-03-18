@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS customers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    surname VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    hash_password VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS couriers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    surname VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    hash_password VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS admins (
+    id SERIAL PRIMARY KEY,
+    admin VARCHAR(255) UNIQUE NOT NULL,
+    hash_password VARCHAR(255) NOT NULL
+);
+

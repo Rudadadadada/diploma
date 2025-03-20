@@ -1,6 +1,7 @@
 package app
 
 import (
+	"diploma/services/admin/pkg/redis"
 	"diploma/services/admin/pkg/storage"
 	"diploma/services/admin/pkg/handlers"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 )
 
 func Launch() {
+	redis.New()
 	storage.PostgresCfg.GetConfig("admin")
 	err := storage.New()
 	if err != nil {
@@ -21,6 +23,7 @@ func Launch() {
 	router.Handle("/static/*", http.StripPrefix("/static", http.FileServer(http.Dir("front/static"))))
     
 	router.With(handlers.JWTMiddleware).Get("/admin", handlers.AdminPage)
+	router.With(handlers.JWTMiddleware).Get("/admin/logout", handlers.Logout)
 	router.With(handlers.JWTMiddleware).Get("/admin/categories", handlers.CategoriesPage)
 	router.With(handlers.JWTMiddleware).Get("/admin/products", handlers.ProductsPage)
 

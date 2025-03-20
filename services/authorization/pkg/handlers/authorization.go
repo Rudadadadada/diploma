@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"diploma/services/authorization/pkg/models"
+	"diploma/services/authorization/pkg/redis"
 	"diploma/services/authorization/pkg/storage"
 	_ "log"
 	"net/http"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 
@@ -35,7 +37,7 @@ func CustomerAuthorization(w http.ResponseWriter, r *http.Request) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claimes := token.Claims.(jwt.MapClaims)
 	claimes["scope"] = "customer"
-	claimes["user_id"] = dbUser.Id
+	claimes["customer_id"] = dbUser.Id
 
 	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
@@ -43,8 +45,16 @@ func CustomerAuthorization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
+	ttl := time.Minute * 1
+	err = redis.SetKeyWithTTL(tokenString, tokenString, ttl)
+    if err != nil {
+        http.Error(w, "Could not save token to Redis", http.StatusInternalServerError)
+        return
+    }
+
 	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
+		Name:     "customer",
 		Value:    tokenString,
 		HttpOnly: true,
 		Path:     "/",
@@ -74,7 +84,7 @@ func CourierAuthorization(w http.ResponseWriter, r *http.Request) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claimes := token.Claims.(jwt.MapClaims)
 	claimes["scope"] = "courier"
-	claimes["user_id"] = dbUser.Id
+	claimes["courier_id"] = dbUser.Id
 
 	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
@@ -83,7 +93,7 @@ func CourierAuthorization(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
+		Name:     "courier",
 		Value:    tokenString,
 		HttpOnly: true,
 		Path:     "/",
@@ -118,6 +128,13 @@ func AdminAuthorization(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not generate token", http.StatusInternalServerError)
 		return
 	}
+
+	ttl := time.Minute * 1
+	err = redis.SetKeyWithTTL(tokenString, tokenString, ttl)
+    if err != nil {
+        http.Error(w, "Could not save token to Redis", http.StatusInternalServerError)
+        return
+    }
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "admin",

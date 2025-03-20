@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"net/http"
-
+	"diploma/services/admin/pkg/redis"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -22,6 +22,25 @@ func JWTMiddleware(next http.Handler) http.Handler {
 		}
 
 		tokenStr := c.Value
+		exists, err := redis.RedisClient.Exists(tokenStr).Result()
+
+		if err != nil {
+			http.Error(w, "Error checking token in Redis", http.StatusInternalServerError)
+			return
+		}
+
+		if exists == 0 {
+			http.SetCookie(w, &http.Cookie{
+				Name:     "admin",
+				Value:    "",
+				HttpOnly: true,
+				Path:     "/",
+				MaxAge:   -1,
+			})
+
+			http.Redirect(w, r, "http://localhost:8082/authorization/admin", http.StatusSeeOther)
+		}
+
 		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 			return jwtKey, nil
 		})

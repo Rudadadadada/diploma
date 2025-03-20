@@ -1,6 +1,7 @@
 package app
 
 import (
+	"diploma/services/authorization/pkg/redis"
 	"diploma/services/authorization/pkg/storage"
 	"diploma/services/authorization/pkg/handlers"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 )
 
 func Launch() {
+	redis.New()
 	storage.PostgresCfg.GetConfig("authorization")
 	err := storage.New()
 	if err != nil {

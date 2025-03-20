@@ -7,3 +7,5 @@ migrate -path services/admin/pkg/migrations -database "postgres://rudadadadada:1
 
 psql -U rudadadadada -d admin
 \i services/admin/pkg/storage/init_admin_postgres.sql
+
+redis-server в отдельном терминале

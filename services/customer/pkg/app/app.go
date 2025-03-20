@@ -1,7 +1,8 @@
 package app
 
 import (
-	// "diploma/services/customer/pkg/storage"
+	"diploma/services/customer/pkg/redis"
+	"diploma/services/customer/pkg/storage"
 	"diploma/services/customer/pkg/handlers"
 	"fmt"
 	"log"
@@ -10,11 +11,12 @@ import (
 )
 
 func Launch() {
-	// storage.PostgresCfg.GetConfig("customer")
-	// err := storage.New()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	redis.New()
+	storage.PostgresCfg.GetConfig("customer")
+	err := storage.New()
+	if err != nil {
+		log.Fatal(err)
+	}
 	
 	router := chi.NewRouter()
 
@@ -22,6 +24,9 @@ func Launch() {
 	
 	router.With(handlers.JWTMiddleware).Get("/customer", handlers.CustomerPage)
 	router.With(handlers.JWTMiddleware).Get("/customer/logout", handlers.Logout)
+
+	router.With(handlers.JWTMiddleware).Get("/customer/select_category", handlers.SelectCategoryPage)
+	router.With(handlers.JWTMiddleware).Get("/customer/select_products/by_category", handlers.SelectProductsByCategoryId)
 
 	// http.HandleFunc("/customer", handlers.CreateProduct)
 	// http.HandleFunc("/customer", handlers.EditProduct)

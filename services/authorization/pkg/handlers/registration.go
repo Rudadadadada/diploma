@@ -10,7 +10,7 @@ import (
 )
 
 func CustomerRegistration(w http.ResponseWriter, r *http.Request) {
-	user := models.User{
+	user := models.Customer{
 		Name:     r.FormValue("first-name"),
 		Surname:  r.FormValue("last-name"),
 		Email:    r.FormValue("email"),
@@ -51,7 +51,7 @@ func CustomerRegistration(w http.ResponseWriter, r *http.Request) {
 }
 
 func CourierRegistration(w http.ResponseWriter, r *http.Request) {
-	user := models.User{
+	user := models.Courier{
 		Name:     r.FormValue("first-name"),
 		Surname:  r.FormValue("last-name"),
 		Email:    r.FormValue("email"),

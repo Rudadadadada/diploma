@@ -11,8 +11,7 @@ func InertIntoBucket(customerId int, items map[int]int) error {
 		where not exists (
 			select 1 from bucket where customer_id = cast($1 as integer) and preparing = true
 		) 
-		limit 1
-		returning id`, customerId,
+		limit 1`, customerId,
 	)
 
 	if err != nil {
@@ -66,6 +65,9 @@ func ViewBucket(customerId int) ([]models.BucketItem, int, error) {
 		products as products on bucket_items.product_id = products.id
 		where customer_id = $1 and preparing = true`, customerId,
 	)
+	if err != nil {
+		return nil, -1, err
+	}
 
 	bucketItems := []models.BucketItem{}
 	var bucketId int
@@ -77,6 +79,11 @@ func ViewBucket(customerId int) ([]models.BucketItem, int, error) {
 		}
 		bucketItems = append(bucketItems, tmp)
 	}
+
+	if err = rows.Close(); err != nil {
+		return nil, -1, err
+	}
+
 	return bucketItems, bucketId, nil
 }
 
@@ -115,3 +122,34 @@ func UpdateBucketStatus(bucketId int, customerId int) error {
 
 	return nil
 }
+
+func GetAllProductCost(bucketId int) (float64, error) {
+	rows, err := db.Query(
+		`select 
+			products.cost * bucket_items.amount as total_cost
+		from bucket_items as bucket_items
+		left join products as products on bucket_items.product_id = products.id 
+		where bucket_id = $1`, bucketId,
+	)
+	
+	if err != nil {
+		return -1, err
+	}
+	
+	var allProductCost float64
+	for rows.Next() {
+		var tmp float64
+		err = rows.Scan(&tmp)
+		if err != nil {
+			return -1, err
+		}
+
+		allProductCost += tmp
+	}
+
+	if err = rows.Close(); err != nil {
+		return -1, err
+	}
+
+	return allProductCost, nil
+}	

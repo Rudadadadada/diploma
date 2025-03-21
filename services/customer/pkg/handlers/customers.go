@@ -88,7 +88,6 @@ func MakeOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var bucketId int
-	var allProductCost float64
 	productsWithAmount := map[int]int{}
 	for key, values := range r.Form {
 		if len(values) == 0 {
@@ -99,12 +98,6 @@ func MakeOrder(w http.ResponseWriter, r *http.Request) {
 
 		if key == "bucket_id" {
 			bucketId, err = strconv.Atoi(value)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-		} else if key == "all_product_cost" {
-			allProductCost, err = strconv.ParseFloat(value, 64)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
@@ -135,6 +128,12 @@ func MakeOrder(w http.ResponseWriter, r *http.Request) {
 
 	customerId := GetCustomerId(w, r)
 	err = storage.UpdateBucketStatus(bucketId, customerId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	allProductCost, err := storage.GetAllProductCost(bucketId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

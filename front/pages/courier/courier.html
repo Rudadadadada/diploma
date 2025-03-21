@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/main.css">
+    <title>Курьер</title>
+    <script>
+        window.addEventListener('load', function() {
+            const stateButton = document.querySelector('#stateButton');
+            const takeOrderButton = document.querySelector('#takeOrderButton');
+
+            fetch('/courier/get_state')
+                .then(response => response.json())
+                .then(data => {
+                    const active = data.active;
+
+                    if (active) {
+                        stateButton.textContent = 'Выйти с линии';
+                        takeOrderButton.style.display = 'block';
+                    } else {
+                        stateButton.textContent = 'Выйти на линию';
+                        takeOrderButton.style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Ошибка при получении состояния:', error));
+        });
+    </script>
+</head>
+<body>
+<h1>Курьер</h1>
+<form action="/courier/take_order" target="_self"></form>
+    <button id="takeOrderButton" style="display: none;">Взять заказ</button>
+</form>
+    <form action="/courier/set_state" target="_self">
+    <button id="stateButton">Выйти на линию</button>
+</form>
+<form action="/courier/logout" target="_self">
+    <button>Разлогиниться</button>
+</form>
+</body>
+</html>

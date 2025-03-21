@@ -17,18 +17,18 @@ var jwtKey = []byte("randomString")
 
 
 func CustomerAuthorization(w http.ResponseWriter, r *http.Request) {
-	user := models.User{
+	customer := models.Customer{
 		Email:        r.FormValue("email"),
 		HashPassword: r.FormValue("password"),
 	}
 
-	dbUser, err := storage.CustomerAuthorization(user)
+	dbCustomer, err := storage.CustomerAuthorization(customer)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(dbUser.HashPassword), []byte(user.HashPassword))
+	err = bcrypt.CompareHashAndPassword([]byte(dbCustomer.HashPassword), []byte(customer.HashPassword))
 	if err != nil {
 		http.Error(w, "Неверная почта или пароль", http.StatusBadRequest)
 		return
@@ -37,14 +37,13 @@ func CustomerAuthorization(w http.ResponseWriter, r *http.Request) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claimes := token.Claims.(jwt.MapClaims)
 	claimes["scope"] = "customer"
-	claimes["customer_id"] = dbUser.Id
+	claimes["customer_id"] = dbCustomer.Id
 
 	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
 		http.Error(w, "Could not generate token", http.StatusInternalServerError)
 		return
 	}
-
 
 	ttl := time.Minute * 5
 	err = redis.SetKeyWithTTL(tokenString, tokenString, ttl)
@@ -64,18 +63,18 @@ func CustomerAuthorization(w http.ResponseWriter, r *http.Request) {
 }
 
 func CourierAuthorization(w http.ResponseWriter, r *http.Request) {
-	user := models.User{
+	courier := models.Courier{
 		Email:        r.FormValue("email"),
 		HashPassword: r.FormValue("password"),
 	}
 
-	dbUser, err := storage.CustomerAuthorization(user)
+	dbCourier, err := storage.CourierAuthorization(courier)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(dbUser.HashPassword), []byte(user.HashPassword))
+	err = bcrypt.CompareHashAndPassword([]byte(dbCourier.HashPassword), []byte(courier.HashPassword))
 	if err != nil {
 		http.Error(w, "Неверная почта или пароль", http.StatusBadRequest)
 		return
@@ -84,13 +83,20 @@ func CourierAuthorization(w http.ResponseWriter, r *http.Request) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claimes := token.Claims.(jwt.MapClaims)
 	claimes["scope"] = "courier"
-	claimes["courier_id"] = dbUser.Id
+	claimes["courier_id"] = dbCourier.Id
 
 	tokenString, err := token.SignedString(jwtKey)
 	if err != nil {
 		http.Error(w, "Could not generate token", http.StatusInternalServerError)
 		return
 	}
+
+	ttl := time.Minute * 5
+	err = redis.SetKeyWithTTL(tokenString, tokenString, ttl)
+    if err != nil {
+        http.Error(w, "Could not save token to Redis", http.StatusInternalServerError)
+        return
+    }
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "courier",

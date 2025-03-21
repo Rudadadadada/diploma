@@ -5,14 +5,13 @@ import (
 
 )
 
-func CustomerAuthorization(user models.User) (*models.User, error) {
+func CustomerAuthorization(user models.Customer) (*models.Customer, error) {
 	rows, err := db.Query(`select * from customers where email = $1`, user.Email)
-
 	if err != nil {
 		return nil, err
 	}
 
-	var tmp models.User
+	var tmp models.Customer
 	for rows.Next() {
 		err = rows.Scan(&tmp.Id, &tmp.Name, &tmp.Surname, &tmp.Email, &tmp.HashPassword)
 		if err != nil {
@@ -28,14 +27,14 @@ func CustomerAuthorization(user models.User) (*models.User, error) {
 	return &tmp, nil
 }
 
-func CourierAuthorization(user models.User) (*models.User, error) {
+func CourierAuthorization(user models.Courier) (*models.Courier, error) {
 	rows, err := db.Query(`select * from couriers where email = $1`, user.Email)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var tmp models.User
+	var tmp models.Courier
 	for rows.Next() {
 		err = rows.Scan(&tmp.Id, &tmp.Name, &tmp.Surname, &tmp.Email, &tmp.HashPassword)
 		if err != nil {

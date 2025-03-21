@@ -24,16 +24,16 @@ func Launch() {
 	
 	router.With(handlers.JWTMiddleware).Get("/customer", handlers.CustomerPage)
 	router.With(handlers.JWTMiddleware).Get("/customer/logout", handlers.Logout)
+	router.With(handlers.JWTMiddleware).Post("/customer/make_order", handlers.MakeOrder)
+	router.With(handlers.JWTMiddleware).Get("/customer/view_orders", handlers.ViewOrdersPage)
+	router.With(handlers.JWTMiddleware).Get("/customer/view_orders/view_order_items", handlers.ViewOrderItems)
 
 	router.With(handlers.JWTMiddleware).Get("/customer/select_category", handlers.SelectCategoryPage)
-	router.With(handlers.JWTMiddleware).Get("/customer/select_products/by_category", handlers.SelectProductsByCategoryId)
-
-	// http.HandleFunc("/customer", handlers.CreateProduct)
-	// http.HandleFunc("/customer", handlers.EditProduct)
-	// http.HandleFunc("/products/view_all", handlers.ViewAllProducts)
+	router.With(handlers.JWTMiddleware).Get("/customer/select_products/by_category", handlers.SelectProductsByCategoryIdPage)
 	
-	// http.HandleFunc("/categories/create", handlers.CreateCategory)
-	// http.HandleFunc("/categories/edit", handlers.EditCategory)
+	router.With(handlers.JWTMiddleware).Get("/customer/bucket", handlers.BucketPage)
+	router.With(handlers.JWTMiddleware).Post("/customer/insert_into_bucket", handlers.InsertIntoBucket)
+	router.With(handlers.JWTMiddleware).Post("/customer/bucket/remove_item_from_bucket", handlers.RemoveItemFromBucket)
 
 	fmt.Println("Customer server is running on port 8081")
 	if err := http.ListenAndServe(":8081", router); err != nil {

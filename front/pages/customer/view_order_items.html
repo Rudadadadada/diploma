@@ -26,27 +26,29 @@
     </style>
 </head>
 <body>
-<h1>Продукты:</h1>
-<table>
-    <tr>
-        <th>ID</th>
-        <th>Наименование продукта</th>
-        <th>Наименование категории</th>
-        <th>Кол-во</th>
-        <th>Стоимость</th>
-    </tr>
-    {{range .}}
-    <tr>
-        <td>{{.Id}}</td>
-        <td>{{.Name}}</td>
-        <td>{{.CategoryName}}</td>
-        <td>{{.Amount}}</td>
-        <td>{{.Cost}}</td>
-    </tr>
-    {{end}}
-</table>
+<h1>Содержимое заказа № {{.OrderId}}:</h1>
+<form>
+    <table>
+        <thead>
+            <tr>
+                <th>Наименование продукта</th>
+                <th>Количество</th>
+                <th>Стоимость</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .OrderItems}}
+            <tr>
+                <td>{{.Name}}</td>
+                <td>{{.Amount}}</td>
+                <td>{{.TotalCost}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</form>
 <br>
-<form action="/customer/select_category" method="get">
+<form action="/customer/view_orders" method="get">
     <button style="width: 100%;">Вернуться назад</button>
 </form>
 </body>

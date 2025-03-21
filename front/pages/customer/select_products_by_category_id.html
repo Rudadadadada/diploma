@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/front/styles/main.css">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #333;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <script>
+        function updateButtonState() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const isAnyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+            document.getElementById('addToBucketButton').disabled = !isAnyChecked;
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateButtonState);
+            });
+
+            updateButtonState();
+        });
+    </script>
+</head>
+<body>
+<h1>Продукты:</h1>
+<form action="/customer/insert_into_bucket" method="post">
+    <table>
+        <tr>
+            <th>Наименование продукта</th>
+            <th>Оставшееся кол-во</th>
+            <th>Стоимость</th>
+            <th>Количество</th>
+            <th>Выбрать</th>
+        </tr>
+        {{range .}}
+        <tr>
+            <td>{{.Name}}</td>
+            <td>{{.Amount}}</td>
+            <td>{{.Cost}}</td>
+            <td>
+                <input type="number" name="amount_{{.Id}}" min="1" max="{{.Amount}}" value="1">
+            </td>
+            <td>
+                <input type="checkbox" name="product_{{.Id}}" value="true">
+            </td>
+        </tr>
+        {{end}}
+    </table>
+    <br>
+    <button id="addToBucketButton" style="width: 100%;">Добавить в корзину</button>
+</form>
+<br>
+<form action="/customer/select_category" method="get">
+    <button style="width: 100%;">Вернуться назад</button>
+</form>
+</body>
+</html>

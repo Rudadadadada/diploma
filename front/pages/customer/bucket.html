@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/front/styles/main.css">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #333;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Ваша корзина:</h1>
+    <form id="update-bucket-form" action="/customer/make_order" method="post">
+        <table>
+            <thead>
+                <tr>
+                    <th>Наименование продукта</th>
+                    <th>Количество</th>
+                    <th>Стоимость</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .BucketItems}}
+                <tr>
+                    <td>{{.Name}}</td>
+                    <td>
+                        <input type="number" class="item-quantity" name="amount_{{.Id}}" min="1" max="{{.Amount}}"
+                            value="{{.Amount}}">
+                    </td>
+                    <td>{{.TotalCost}}</td>
+                    <td>
+                        <button type="button" class="delete-button" data-product-id="{{.Id}}"
+                            data-bucket-id="{{$.BucketId}}">Удалить</button>
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+        <div style="margin-top: 20px;">
+            <strong>Общая стоимость: {{.AllProductsCost}}</strong>
+        </div>
+        <input type="hidden" name="bucket_id" value="{{.BucketId}}">
+        <input type="hidden" name="all_product_cost" value="{{.AllProductsCost}}">
+        <button style="width: 100%;">Сделать заказ</button>
+    </form>
+    <form action="/customer" method="get">
+        <button style="width: 100%;">Вернуться назад</button>
+    </form>
+    <script>
+        document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', function () {
+                const productId = parseInt(this.dataset.productId, 10);
+                const bucketId = parseInt(this.dataset.bucketId, 10);
+
+                fetch('/customer/bucket/remove_item_from_bucket', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        bucket_id: bucketId
+                    })
+                })
+                    .then(response => {
+                        console.log(`Server responded with status: ${response.status}`);
+                        if (!response.ok) {
+                            return response.json().then(err => { throw new Error(err.message); });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Элемент успешно удален');
+                            location.reload();
+                        } else {
+                            console.error('Ошибка удаления:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при выполнении запроса:', error);
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>

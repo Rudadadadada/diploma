@@ -14,8 +14,27 @@ CREATE TABLE IF NOT EXISTS products (
 
 CREATE TABLE IF NOT EXISTS bucket (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL,
-    prodcuts_with_amount INT[][],
-    total_cost INT NOT NULL,
-    status VARCHAR(255) NOT NULL
+    customer_id INT NOT NULL,
+    preparing BOOL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS bucket_items (
+    id SERIAL PRIMARY KEY,
+    bucket_id INT NOT NULL,
+    product_id INT NOT NULL,
+    amount INT NOT NULL,
+    FOREIGN KEY (bucket_id) REFERENCES bucket(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    UNIQUE (bucket_id, product_id)
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+    id SERIAL PRIMARY KEY,
+    customer_id INT NOT NULL,
+    bucket_id INT NOT NULL,
+    total_cost DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    delivered_at TIMESTAMP,
+    status VARCHAR(255) NOT NULL,
+    FOREIGN KEY (bucket_id) REFERENCES bucket(id) ON DELETE CASCADE
 );

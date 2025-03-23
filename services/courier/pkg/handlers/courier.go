@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"diploma/services/courier/pkg/models"
+	"diploma/services/courier/pkg/mq"
 	"diploma/services/courier/pkg/redis"
 	"diploma/services/courier/pkg/storage"
 	"encoding/json"
@@ -8,7 +10,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 )
-
 
 func Logout(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie("courier")
@@ -106,6 +107,16 @@ func GetState(w http.ResponseWriter, r *http.Request) {
 
 	response := map[string]bool{"active": active}
 	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, "Ошибка при форматировании ответа", http.StatusInternalServerError)
+		return
+	}
+
+	courierState := models.CourierState{
+		CourierId: courierId,
+		State:     active,
+	}
+	err = mq.ProduceState(courierState, "Courier state")
 	if err != nil {
 		http.Error(w, "Ошибка при форматировании ответа", http.StatusInternalServerError)
 		return

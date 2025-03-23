@@ -4,13 +4,24 @@ import (
 	"diploma/services/courier/pkg/redis"
 	"diploma/services/courier/pkg/handlers"
 	"diploma/services/courier/pkg/storage"
+	"diploma/services/courier/pkg/mq"
 	"fmt"
 	"log"
 	"net/http"
 	"github.com/go-chi/chi/v5"
 )
 
-func Launch() {
+func kafkaLaunch() {
+	mq.New()
+	
+	for i := 0; i < 5; i++ {
+		go mq.HandleMessages()
+	}
+
+	select {}
+}
+
+func serverLaunch() {
 	redis.New()
 	storage.PostgresCfg.GetConfig("courier")
 	err := storage.New()
@@ -32,4 +43,11 @@ func Launch() {
 	if err := http.ListenAndServe(":8083", router); err != nil {
 		log.Fatalf("failed to start server: %v", err)
 	}
+}
+
+func Launch() {
+	go kafkaLaunch()
+	go serverLaunch()
+
+	select {}
 }

@@ -65,6 +65,28 @@ func MakeOrder(bucketId int, customerId int, allProductsCost float64) error {
 	return nil
 }
 
+func SelectOrderId(bucketId int, customerId int) (int, error) {
+	rows, err := db.Query(`select id from orders where bucket_id = $1 and customer_id = $2`, bucketId, customerId)
+
+	if err != nil {
+		return -1, err
+	}
+
+	var id int
+	for rows.Next() {
+		err = rows.Scan(&id)
+		if err != nil {
+			return -1, err
+		}
+	}
+	
+	if err = rows.Close(); err != nil {
+		return -1, err
+	}
+
+	return id, nil
+}
+
 func ViewOrders(customerId int) ([]models.Order, error) {
 	rows, err := db.Query(`select * from orders where customer_id = $1`, customerId)
 	if err != nil {
@@ -94,7 +116,7 @@ func ViewOrderItems(bucketId int) ([]models.BucketItem, error) {
 	rows, err := db.Query(
 		`select 
 			bucket_items.product_id,
-			bucket_items.bucket_id,
+			products.id,
 			products.name,
 			bucket_items.amount,
 			products.cost * bucket_items.amount as total_cost
@@ -111,7 +133,7 @@ func ViewOrderItems(bucketId int) ([]models.BucketItem, error) {
 	for rows.Next() {
 		var tmp models.BucketItem
 		
-		err = rows.Scan(&tmp.Id, &bucketId, &tmp.Name, &tmp.Amount, &tmp.TotalCost)
+		err = rows.Scan(&tmp.Id, &tmp.ProductId, &tmp.Name, &tmp.Amount, &tmp.TotalCost)
 		if err != nil {
 			return nil, err
 		}
@@ -124,4 +146,18 @@ func ViewOrderItems(bucketId int) ([]models.BucketItem, error) {
 	}
 
 	return bucketItems, nil
+}
+
+func UpdateStatus(orderId int, status string) error {
+	_, err := db.Query(
+		`update orders
+		set status = $2
+		where id = $1`, orderId, status,
+	)
+	
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

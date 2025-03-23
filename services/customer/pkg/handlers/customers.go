@@ -4,9 +4,10 @@ import (
 	"diploma/services/customer/pkg/models"
 	"diploma/services/customer/pkg/redis"
 	"diploma/services/customer/pkg/storage"
+
+	"diploma/services/customer/pkg/mq"
 	"html/template"
 
-	// "encoding/json"
 	"log"
 	"strconv"
 
@@ -145,6 +146,33 @@ func MakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	orderId, err := storage.SelectOrderId(bucketId, customerId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	orderItems, err := storage.ViewOrderItems(bucketId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	madeOrderMessage := models.OrderMessage{
+		OrderId:     orderId,
+		CustomerId:  customerId,
+		TotalCost:   int(allProductCost),
+		Status:      "created",
+		DeliveredAt: nil,
+		OrderItems:  orderItems,
+	}
+
+	err = mq.ProduceMessage(madeOrderMessage, "Made order")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	MadeOrderPage(w, r)
 }
 
@@ -168,7 +196,7 @@ func ViewOrderItems(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := ViewOrderItemsData{
-		OrderId: orderId,
+		OrderId:    orderId,
 		OrderItems: orderItems,
 	}
 

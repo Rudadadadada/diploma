@@ -1,0 +1,5 @@
+host: "localhost"
+port: 5432
+user: "rudadadadada"
+password: "1"
+dbname: "distribution"

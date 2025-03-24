@@ -47,6 +47,7 @@ func HandleMessages() {
 func ProduceMessage(msg models.OrderMessage, key string) error {
 	topic := "customer"
 
+	log.Print(msg)
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		return err
@@ -66,19 +67,17 @@ func ProduceMessage(msg models.OrderMessage, key string) error {
 }
 
 func ParseMessage(msg *kafka.Message) (error) {
-	var kafkaMessage models.OrderMessage
+	var orderMessage models.OrderMessage
 	key := string(msg.Key)
 
-	err := json.Unmarshal(msg.Value, &kafkaMessage)
+	err := json.Unmarshal(msg.Value, &orderMessage)
 	if err != nil {
 		return err
 	}
 
 	switch key {
-	case "Waiting for courier":
-		storage.UpdateStatus(kafkaMessage.OrderId, kafkaMessage.Status)
-	case "No couriers":
-		storage.UpdateStatus(kafkaMessage.OrderId, kafkaMessage.Status)
+	case "Waiting for courier", "No couriers", "Order distributed":
+		storage.UpdateStatus(orderMessage.OrderId, orderMessage.Status)
 	}
 
 	return nil

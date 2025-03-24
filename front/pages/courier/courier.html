@@ -23,13 +23,18 @@
                     }
                 })
                 .catch(error => console.error('Ошибка при получении состояния:', error));
+
+            takeOrderButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                window.location.href = '/courier/view_orders';
+            });
         });
     </script>
 </head>
 <body>
 <h1>Курьер</h1>
-<form action="/courier/take_order" target="_self"></form>
-    <button id="takeOrderButton" style="display: none;">Взять заказ</button>
+<form action="/courier/view_orders" target="_self"></form>
+    <button id="takeOrderButton" style="display: none;">Посмотреть доступные заказы</button>
 </form>
     <form action="/courier/set_state" target="_self">
     <button id="stateButton">Выйти на линию</button>

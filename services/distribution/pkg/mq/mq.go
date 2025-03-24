@@ -104,6 +104,8 @@ func ParseMessageAndProduce(msg *kafka.Message) error {
 				orderMessage.Status = "order sent to couriers"
 				ProduceMessage(orderMessage, "Order sent to couriers")
 			}
+		case "Order taken":
+			ProduceMessage(orderMessage, "Order distributed")
 		}
 	}
 

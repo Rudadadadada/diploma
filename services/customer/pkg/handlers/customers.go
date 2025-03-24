@@ -146,7 +146,7 @@ func MakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orderId, err := storage.SelectOrderId(bucketId, customerId)
+	orderId, created_at, err := storage.SelectOrderIdAndCreatedAt(bucketId, customerId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -161,9 +161,9 @@ func MakeOrder(w http.ResponseWriter, r *http.Request) {
 	madeOrderMessage := models.OrderMessage{
 		OrderId:     orderId,
 		CustomerId:  customerId,
-		TotalCost:   int(allProductCost),
+		TotalCost:   float32(allProductCost),
 		Status:      "created",
-		DeliveredAt: nil,
+		CreatedAt:   created_at,
 		OrderItems:  orderItems,
 	}
 

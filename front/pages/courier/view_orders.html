@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/front/styles/main.css">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #333;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Заказы:</h1>
+    <table>
+        <tr>
+            <th>Номер</th>
+            <th>Время создания</th>
+            <th>Общая стоимость</th>
+            <th>Посмотреть содержимое заказа</th>
+            <th></th>
+        </tr>
+        {{range .}}
+        <tr>
+            <td>{{.Id}}</td>
+            <td>{{.CreatedAt}}</td>
+            <td>{{.TotalCost}}</td>
+            <td>
+                <button type="button" class="view-order-items-button" data-order-id="{{.Id}}">Содержимое заказа</button>
+            </td>
+            <td>
+                <button type="button" class="take-order-button" data-order-id="{{.Id}}">Взять заказ</button>
+            </td>
+        </tr>
+        {{end}}
+    </table>
+    <script>
+        document.querySelectorAll('.view-order-items-button').forEach(button => {
+            button.addEventListener('click', function () {
+                const orderId = parseInt(this.dataset.orderId, 10);
+                
+                const queryParams = new URLSearchParams({
+                    order_id: orderId,
+                });
+
+                window.location.href = `/courier/view_orders/view_order_items?${queryParams.toString()}`;
+            });
+        });
+        document.querySelectorAll('.take-order-button').forEach(button => {
+            button.addEventListener('click', function () {
+                const orderId = parseInt(this.dataset.orderId, 10);
+                
+                const queryParams = new URLSearchParams({
+                    order_id: orderId,
+                });
+
+                window.location.href = `/courier/take_order?${queryParams.toString()}`;
+            });
+        });
+    </script>
+    <br>
+    <form action="/courier" method="get">
+        <button style="width: 100%;">Вернуться назад</button>
+    </form>
+</body>
+
+</html>

@@ -79,11 +79,8 @@ func ParseMessageAndProduce(msg *kafka.Message) error {
 		ProduceMessage(orderMessage, "Waiting for courier")
 	case "No couriers":
 		ProduceMessage(orderMessage, "No couriers")
-	}
-
-	if key == "Made order" {
-		orderMessage.Status = "waiting for courier"
-		ProduceMessage(orderMessage, "Waiting for courier")
+	case "Order distributed":
+		ProduceMessage(orderMessage, "Order distributed")
 	}
 
 	return nil

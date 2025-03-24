@@ -2,6 +2,7 @@ package storage
 
 import (
 	"diploma/services/customer/pkg/models"
+	"time"
 )
 
 func ViewAllCategories() ([]models.Category, error) {
@@ -65,26 +66,27 @@ func MakeOrder(bucketId int, customerId int, allProductsCost float64) error {
 	return nil
 }
 
-func SelectOrderId(bucketId int, customerId int) (int, error) {
-	rows, err := db.Query(`select id from orders where bucket_id = $1 and customer_id = $2`, bucketId, customerId)
+func SelectOrderIdAndCreatedAt(bucketId int, customerId int) (int, time.Time, error) {
+	rows, err := db.Query(`select id, created_at from orders where bucket_id = $1 and customer_id = $2`, bucketId, customerId)
 
 	if err != nil {
-		return -1, err
+		return -1, time.Time{}, err
 	}
 
 	var id int
+	var created_at time.Time
 	for rows.Next() {
-		err = rows.Scan(&id)
+		err = rows.Scan(&id, &created_at)
 		if err != nil {
-			return -1, err
+			return -1, time.Time{}, err
 		}
 	}
 	
 	if err = rows.Close(); err != nil {
-		return -1, err
+		return -1, time.Time{}, err
 	}
 
-	return id, nil
+	return id, created_at, nil
 }
 
 func ViewOrders(customerId int) ([]models.Order, error) {
@@ -115,7 +117,7 @@ func ViewOrders(customerId int) ([]models.Order, error) {
 func ViewOrderItems(bucketId int) ([]models.BucketItem, error) {
 	rows, err := db.Query(
 		`select 
-			bucket_items.product_id,
+			bucket_items.id,
 			products.id,
 			products.name,
 			bucket_items.amount,

@@ -1,13 +1,10 @@
 package mq
 
 import (
-	// "diploma/services/courier/pkg/storage"
-	"diploma/services/courier/pkg/storage"
-	"diploma/services/courier/pkg/models"
+	"diploma/services/admin/pkg/models"
 	"encoding/json"
-	"log"
-
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"log"
 )
 
 var Producer *kafka.Producer
@@ -21,12 +18,12 @@ func New() {
 
 	Consumer, _ = kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers":  "localhost:9092",
-		"group.id":           "my-group-3",
+		"group.id":           "my-group-5",
 		"auto.offset.reset":  "earliest",
 		"enable.auto.commit": true,
 	})
 
-	topics := []string{"distribution"}
+	topics := []string{"order"}
 	Consumer.SubscribeTopics(topics, nil)
 }
 
@@ -37,7 +34,7 @@ func HandleMessages() {
 			log.Printf("Received message: %s\n", string(msg.Key))
 			err = ParseMessageAndProduce(msg)
 			if err != nil {
-				log.Printf("Failed to parse message: %s\n", string(msg.Value))
+				log.Printf("Failed to parse and produce on message: %s\n", string(msg.Value))
 			}
 		} else {
 			log.Println("Consumer error:", err)
@@ -47,30 +44,7 @@ func HandleMessages() {
 }
 
 func ProduceMessage(msg models.OrderMessage, key string) error {
-	topic := "courier"
-
-	log.Print(msg)
-
-	jsonMsg, err := json.Marshal(msg)
-	if err != nil {
-		return err
-	}
-
-	err = Producer.Produce(&kafka.Message{
-		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		Value:          jsonMsg,
-		Key:            []byte(key),
-	}, nil)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func ProduceState(msg models.CourierState, key string) error {
-	topic := "courier"
+	topic := "admin"
 
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
@@ -92,7 +66,6 @@ func ProduceState(msg models.CourierState, key string) error {
 
 func ParseMessageAndProduce(msg *kafka.Message) error {
 	var orderMessage models.OrderMessage
-
 	key := string(msg.Key)
 
 	err := json.Unmarshal(msg.Value, &orderMessage)
@@ -101,11 +74,13 @@ func ParseMessageAndProduce(msg *kafka.Message) error {
 	}
 
 	switch key {
+	case "Made order":
+		orderMessage.Status = "waiting for courier"
+		ProduceMessage(orderMessage, "Waiting for courier")
+	case "No couriers":
+		ProduceMessage(orderMessage, "No couriers")
 	case "Order sent to couriers":
-		err = storage.InsertOrder(orderMessage)
-		if err != nil {
-			log.Print(err)
-		}
+		ProduceMessage(orderMessage, "Get actual state of products database")
 	}
 
 	return nil

@@ -6,7 +6,11 @@ import (
 	"diploma/services/courier/pkg/redis"
 	"diploma/services/courier/pkg/storage"
 	"encoding/json"
+	"html/template"
+	"log"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -74,14 +78,7 @@ func GetCourierId(w http.ResponseWriter, r *http.Request) int {
 func SetState(w http.ResponseWriter, r *http.Request) {
 	courierId := GetCourierId(w, r)
 
-	err := storage.AddCourier(courierId)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = storage.SetActive(courierId)
+	err := storage.SetActive(courierId)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -93,6 +90,13 @@ func SetState(w http.ResponseWriter, r *http.Request) {
 
 func GetState(w http.ResponseWriter, r *http.Request) {
 	courierId := GetCourierId(w, r)
+
+	err := storage.AddCourier(courierId)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	ptr, err := storage.GetState(courierId)
 	if err != nil {
@@ -124,4 +128,98 @@ func GetState(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResponse)
+}
+
+func CheckCourierState(w http.ResponseWriter, r *http.Request, redirectPath string) {
+	courierId := GetCourierId(w, r)
+
+	ptr, err := storage.GetState(courierId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var active bool
+	if ptr != nil {
+		active = *ptr
+	}
+
+	if !active {
+		http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+		return
+	}
+}
+
+func TakeOrder(w http.ResponseWriter, r *http.Request) {
+	CheckCourierState(w, r, "http://localhost:8083/courier")
+
+	orderId, err := strconv.Atoi(r.FormValue("order_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	ptr, err := storage.CheckOrderTaken(orderId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var took bool
+	if ptr != nil {
+		took = *ptr
+	}
+
+	if took {
+		tmpl, err := template.ParseFiles("front/pages/courier/taken_by_other_courier.html")
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			log.Fatalf("StartPage: %s", err.Error())
+		}
+		err = tmpl.Execute(w, nil)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			log.Fatalf("StartPage: %s", err.Error())
+		}
+		return
+	}
+
+	courierId := GetCourierId(w, r)
+	err = storage.TakeOrder(orderId, courierId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	ptrOrderMessage, err := storage.GetFullOrderInfo(orderId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var tookOrderMessage models.OrderMessage
+	if ptr != nil {
+		tookOrderMessage = *ptrOrderMessage
+	}
+
+	tookOrderMessage.Status = "preparing"
+	tookOrderMessage.DeliveryStartedAt = time.Now()
+	tookOrderMessage.Courier = models.Courier{Id: uint(courierId)}
+	
+	err = mq.ProduceMessage(tookOrderMessage, "Order taken")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	tmpl, err := template.ParseFiles("front/pages/courier/order_taken.html")
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		log.Fatalf("StartPage: %s", err.Error())
+	}
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Fatalf("StartPage: %s", err.Error())
+	}
 }

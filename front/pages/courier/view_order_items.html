@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/front/styles/main.css">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #333;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<h1>Содержимое заказа № {{.OrderId}}:</h1>
+<form>
+    <table>
+        <thead>
+            <tr>
+                <th>Наименование продукта</th>
+                <th>Количество</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .OrderItems}}
+            <tr>
+                <td>{{.Name}}</td>
+                <td>{{.Amount}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</form>
+<br>
+<form action="/courier/view_orders" method="get">
+    <button style="width: 100%;">Вернуться назад</button>
+</form>
+</body>
+</html>

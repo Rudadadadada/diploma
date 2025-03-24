@@ -4,11 +4,22 @@ import (
 	"diploma/services/admin/pkg/redis"
 	"diploma/services/admin/pkg/storage"
 	"diploma/services/admin/pkg/handlers"
+	"diploma/services/admin/pkg/mq"
 	"fmt"
 	"log"
 	"net/http"
 	"github.com/go-chi/chi/v5"
 )
+
+func kafkaLaunch() {
+	mq.New()
+	
+	for i := 0; i < 5; i++ {
+		go mq.HandleMessages()
+	}
+
+	select {}
+}
 
 func Launch() {
 	redis.New()

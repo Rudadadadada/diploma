@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"diploma/services/admin/pkg/models"
+	"diploma/services/admin/pkg/mq"
 	"diploma/services/admin/pkg/storage"
 	"html/template"
 	"net/http"
@@ -46,6 +47,18 @@ func CreateCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	syncDatabasesMessage, err := storage.SyncDatabases()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = mq.ProduceSyncMessage(*syncDatabasesMessage)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	data := SuccessData{
 		Title: "Категория успешно создана",
 		Path: "/admin/categories",
@@ -80,11 +93,23 @@ func RemoveCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	syncDatabasesMessage, err := storage.SyncDatabases()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = mq.ProduceSyncMessage(*syncDatabasesMessage)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	data := SuccessData{
 		Title: "Категория успешно удалена",
 		Path: "/admin/categories",
 	}
-
+	
 	if err = tmpl.Execute(w, data); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

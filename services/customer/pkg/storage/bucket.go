@@ -2,6 +2,7 @@ package storage
 
 import (
 	"diploma/services/customer/pkg/models"
+	"log"
 )
 
 func InertIntoBucket(customerId int, items map[int]int) error {
@@ -131,11 +132,11 @@ func GetAllProductCost(bucketId int) (float64, error) {
 		left join products as products on bucket_items.product_id = products.id 
 		where bucket_id = $1`, bucketId,
 	)
-	
+
 	if err != nil {
 		return -1, err
 	}
-	
+
 	var allProductCost float64
 	for rows.Next() {
 		var tmp float64
@@ -152,4 +153,83 @@ func GetAllProductCost(bucketId int) (float64, error) {
 	}
 
 	return allProductCost, nil
-}	
+}
+
+func GetChangesAndUpdate(currentOrderItems []models.BucketItem, orderId int, newTotalCost int) (*bool, error) {
+	var previousOrderItems []models.BucketItem
+
+	for _, product := range currentOrderItems {
+		rows, err := db.Query(`select id, amount from bucket_items where id = $1`, product.Id)
+
+		if err != nil {
+			log.Print(err)
+			return nil, err
+		}
+
+		for rows.Next() {
+			var tmp models.BucketItem
+			err = rows.Scan(&tmp.Id, &tmp.Amount)
+			if err != nil {
+				return nil, err
+			}
+
+			previousOrderItems = append(previousOrderItems, tmp)
+		}
+
+		if err = rows.Close(); err != nil {
+			return nil, err
+		}
+	}
+
+	changed := false
+	for i := 0; i < len(currentOrderItems); i++ {
+		if currentOrderItems[i].Amount == previousOrderItems[i].Amount {
+			continue
+		}
+
+		changed = true
+		_, err := db.Query(`
+			update bucket_items 
+			set amount = $1 
+			where id = $2`, currentOrderItems[i].Amount, currentOrderItems[i].Id,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	log.Print(newTotalCost)
+	_, err := db.Query(`update orders set total_cost = $1 where id = $2`, newTotalCost, orderId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &changed, nil
+}
+
+func CheckOrderIsEmpty(orderId int) (*bool, error) {
+	rows, err := db.Query(`select total_cost from orders where id = $1`, orderId)
+	if err != nil {
+		return nil, err
+	}
+
+	var total_cost float32
+	for rows.Next() {
+		err = rows.Scan(&total_cost)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if err = rows.Close(); err != nil {
+		return nil, err
+	}
+
+	isEmpty := false
+	if total_cost == 0 {
+		isEmpty = true
+	}
+
+	return &isEmpty, nil
+}

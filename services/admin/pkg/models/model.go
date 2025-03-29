@@ -15,6 +15,11 @@ type Category struct {
 	Name string `json:"name"`
 }
 
+type SyncDatabasesMessage struct {
+	Categories []Category `json:"categories"`
+	Products   []Product  `json:"products"`
+}
+
 type BucketItem struct {
 	Id        uint    `json:"id"`
 	ProductId uint    `json:"product_id"`
@@ -24,7 +29,11 @@ type BucketItem struct {
 }
 
 type Courier struct {
-	Id uint `json:"id"`
+	Id              int  `json:"id"`
+	Active          bool `json:"active"`
+	In_progress     bool `json:"in_progress"`
+	Rating          int  `json:"rating"`
+	Order_delivered int  `json:"order_delivered"`
 }
 
 type OrderMessage struct {

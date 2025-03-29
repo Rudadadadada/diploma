@@ -15,6 +15,11 @@ type Category struct {
 	Name string `json:"name"`
 }
 
+type SyncDatabasesMessage struct {
+	Categories []Category `json:"categories"`
+	Products   []Product  `json:"products"`
+}
+
 type BucketItem struct {
 	Id        uint    `json:"id"`
 	ProductId uint    `json:"product_id"`
@@ -27,7 +32,7 @@ type Order struct {
 	Id          uint       `json:"id"`
 	CustomerId  uint       `json:"customer_id"`
 	BucketId    uint       `json:"bucket_id"`
-	TotalCost   float64    `json:"total_cost"`
+	TotalCost   float32    `json:"total_cost"`
 	CreatedAt   time.Time  `json:"created_at"`
 	DeliveredAt *time.Time `json:"delivered_at,omitempty"`
 	Status      string     `json:"status"`

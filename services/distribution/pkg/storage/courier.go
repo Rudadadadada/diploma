@@ -4,13 +4,13 @@ import (
 	"diploma/services/distribution/pkg/models"
 )
 
-func AddCourier(courierId int) error {
+func AddCourier(courier models.Courier) error {
 	_, err := db.Query(
-		`insert into active_couriers (id, active)
-		select * from (select cast($1 as integer), true) as tmp
+		`insert into couriers (id, active, in_progress, rating, order_delivered)
+		select * from (select cast($1 as integer), cast($2 as bool), cast($3 as bool), cast($4 as integer), cast($5 as integer)) as tmp
 		where not exists (
-			select 1 from active_couriers where id = cast($1 as integer)
-		)`, courierId,
+			select 1 from couriers where id = cast($1 as integer)
+		)`, courier.Id, courier.Active, courier.In_progress, courier.Rating, courier.Order_delivered,
 	)
 
 	if err != nil {
@@ -22,7 +22,7 @@ func AddCourier(courierId int) error {
 
 func SetState(courierId int, state bool) error {
 	_, err := db.Query(
-		`update active_couriers
+		`update couriers
 		set active = $2
 		where id = $1`, courierId, state,
 	)
@@ -34,27 +34,41 @@ func SetState(courierId int, state bool) error {
 	return nil
 }
 
-func GetActiveCouriers() ([]models.CourierState, error) {
-	rows, err := db.Query(`select * from active_couriers where active = true`)
+func SetInProgress(courierId int) error {
+	_, err := db.Query(
+		`update couriers
+		set in_progress = not in_progress
+		where id = $1;`, courierId,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetActiveCouriers() ([]models.Courier, error) {
+	rows, err := db.Query(`select * from couriers where active = true and in_progress = false`)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var courierStates []models.CourierState
+	var couriers []models.Courier
 	for rows.Next() {
-		var tmp models.CourierState
-		err = rows.Scan(&tmp.CourierId, &tmp.State)
+		var tmp models.Courier
+		err = rows.Scan(&tmp.Id, &tmp.Active, &tmp.In_progress, &tmp.Rating, &tmp.Order_delivered)
 		if err != nil {
 			return nil, err
 		}
 
-		courierStates = append(courierStates, tmp)
+		couriers = append(couriers, tmp)
 	}
 
 	if err = rows.Close(); err != nil {
 		return nil, err
 	}
 
-	return courierStates, nil
+	return couriers, nil
 }

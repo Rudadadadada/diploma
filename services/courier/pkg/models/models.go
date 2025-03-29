@@ -24,7 +24,11 @@ type OrderItem struct {
 }
 
 type Courier struct {
-	Id uint `json:"id"`
+	Id              int `json:"id"`
+	Active          bool `json:"active"`
+	InProgress     bool `json:"in_progress"`
+	Rating          int  `json:"rating"`
+	Order_delivered int  `json:"order_delivered"`
 }
 
 type OrderMessage struct {
@@ -37,10 +41,4 @@ type OrderMessage struct {
 	DeliveredAt       time.Time    `json:"delivered_at,omitempty"`
 	Courier           Courier      `json:"courier"`
 	OrderItems        []BucketItem `json:"bucket_items"`
-}
-
-
-type CourierState struct {
-	CourierId int  `json:"courier_id"`
-	State     bool `json:"state"`
 }

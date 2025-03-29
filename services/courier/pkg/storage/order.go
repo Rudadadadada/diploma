@@ -2,12 +2,13 @@ package storage
 
 import (
 	"diploma/services/courier/pkg/models"
+	"time"
 )
 
 func InsertOrder(order models.OrderMessage) error {
 	rows, err := db.Query(`
-		insert into orders (id, customer_id, courier_id, total_cost, created_at, took) 
-		values ($1, $2, -1, $3, $4, false) returning id`, order.OrderId, order.CustomerId, order.TotalCost, order.CreatedAt,
+		insert into orders (id, customer_id, courier_id, total_cost, created_at, took, status) 
+		values ($1, $2, -1, $3, $4, false, $5) returning id`, order.OrderId, order.CustomerId, order.TotalCost, order.CreatedAt, order.Status,
 	)
 
 	if err != nil {
@@ -28,7 +29,7 @@ func InsertOrder(order models.OrderMessage) error {
 
 	for _, product := range order.OrderItems {
 		_, err := db.Query(
-			`insert into order_items (id, order_id, product_id, name, amount, total_cost) values ($1, $2, $3, $4, $5, $6)`, 
+			`insert into order_items (id, order_id, product_id, name, amount, total_cost) values ($1, $2, $3, $4, $5, $6)`,
 			product.Id, order.OrderId, product.ProductId, product.Name, product.Amount, product.TotalCost,
 		)
 
@@ -98,31 +99,32 @@ func ViewOrderItem(orderId int) ([]models.OrderItem, error) {
 
 }
 
-func CheckOrderTaken(orderId int) (*bool, error) {
-	rows, err := db.Query(`select took from orders where id = $1`, orderId)
+func CheckOrderTaken(orderId int) (int, *bool, error) {
+	rows, err := db.Query(`select id, took from orders where id = $1`, orderId)
 	if err != nil {
-		return nil, err
+		return -1, nil, err
 	}
 
+	var id int
 	var took bool
 	for rows.Next() {
-		err = rows.Scan(&took)
+		err = rows.Scan(&id, &took)
 		if err != nil {
-			return nil, err
+			return -1, nil, err
 		}
 	}
 
 	if err = rows.Close(); err != nil {
-		return nil, err
+		return -1, nil, err
 	}
 
-	return &took, nil
+	return id, &took, nil
 }
 
 func TakeOrder(orderId int, courierId int) error {
 	_, err := db.Query(`update orders
-		set courier_id = $1, took = true
-		where id = $2`, courierId, orderId,
+		set courier_id = $1, took = true, delivery_started = $3
+		where id = $2`, courierId, orderId, time.Now(),
 	)
 
 	if err != nil {
@@ -130,6 +132,32 @@ func TakeOrder(orderId int, courierId int) error {
 	}
 
 	return nil
+}
+
+func GetOrderId(courierId int) (int, error) {
+	rows, err := db.Query(`
+	 select
+	  id
+	 from orders where courier_id = $1`, courierId,
+	)
+
+	if err != nil {
+		return -1, err
+	}
+
+	var orderId int
+	for rows.Next() {
+		err = rows.Scan(&orderId)
+		if err != nil {
+			return -1, err
+		}
+	}
+
+	if err = rows.Close(); err != nil {
+		return -1, err
+	}
+
+	return orderId, nil
 }
 
 func GetFullOrderInfo(orderId int) (*models.OrderMessage, error) {
@@ -157,7 +185,7 @@ func GetFullOrderInfo(orderId int) (*models.OrderMessage, error) {
 	if err = rows.Close(); err != nil {
 		return nil, err
 	}
-	
+
 	rows, err = db.Query(`
 		select
 			id,
@@ -185,4 +213,61 @@ func GetFullOrderInfo(orderId int) (*models.OrderMessage, error) {
 	}
 
 	return &order, nil
+}
+
+func GetOrderCost(orderId int) (float32, error) {
+	rows, err := db.Query(`select total_cost from orders where id = $1`, orderId)
+	if err != nil {
+		return -1, err
+	}
+
+	var totalCost float32
+	for rows.Next() {
+		err = rows.Scan(&totalCost)
+		if err != nil {
+			return -1, err
+		}
+	}
+
+	if err = rows.Close(); err != nil {
+		return -1, err
+	}
+
+	return totalCost, nil
+}
+
+func UpdateOrderStatus(orderId int, status string) error {
+	_, err := db.Query(
+		`update orders
+		set status = $2
+		where id = $1`, orderId, status,
+	)
+	
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetOrderStatus(orderId int) (string, error) {
+	rows, err := db.Query(`select status from orders where id = $1`, orderId)
+	if err != nil {
+		return "", err
+	}
+
+	var status string
+	for rows.Next() {
+		err = rows.Scan(&status)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if err = rows.Close(); err != nil {
+		return "", err
+	}
+
+
+	return status, nil
 }

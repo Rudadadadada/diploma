@@ -2,10 +2,11 @@ package mq
 
 import (
 	// "diploma/services/courier/pkg/storage"
-	"diploma/services/courier/pkg/storage"
 	"diploma/services/courier/pkg/models"
+	"diploma/services/courier/pkg/storage"
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
@@ -26,7 +27,7 @@ func New() {
 		"enable.auto.commit": true,
 	})
 
-	topics := []string{"distribution"}
+	topics := []string{"distribution", "order"}
 	Consumer.SubscribeTopics(topics, nil)
 }
 
@@ -69,7 +70,7 @@ func ProduceMessage(msg models.OrderMessage, key string) error {
 	return nil
 }
 
-func ProduceState(msg models.CourierState, key string) error {
+func ProduceState(msg models.Courier, key string) error {
 	topic := "courier"
 
 	jsonMsg, err := json.Marshal(msg)
@@ -104,7 +105,14 @@ func ParseMessageAndProduce(msg *kafka.Message) error {
 	case "Order sent to couriers":
 		err = storage.InsertOrder(orderMessage)
 		if err != nil {
+			return err
+		}
+	case "Order collected":
+		time.Sleep(5 * time.Second)
+		err = storage.UpdateOrderStatus(orderMessage.OrderId, "order collected")
+		if err != nil {
 			log.Print(err)
+			return err
 		}
 	}
 

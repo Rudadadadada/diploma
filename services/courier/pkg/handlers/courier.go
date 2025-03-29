@@ -76,9 +76,20 @@ func GetCourierId(w http.ResponseWriter, r *http.Request) int {
 }
 
 func SetState(w http.ResponseWriter, r *http.Request) {
+	path, err := CheckCourierInProgress(w, r, nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if path != nil {
+		http.Redirect(w, r, *path, http.StatusSeeOther)
+		return
+	}
+
 	courierId := GetCourierId(w, r)
 
-	err := storage.SetActive(courierId)
+	err = storage.SetActive(courierId)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -104,23 +115,19 @@ func GetState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var active bool
+	var courier models.Courier
 	if ptr != nil {
-		active = *ptr
+		courier = *ptr
 	}
 
-	response := map[string]bool{"active": active}
+	response := map[string]bool{"active": courier.Active}
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, "Ошибка при форматировании ответа", http.StatusInternalServerError)
 		return
 	}
 
-	courierState := models.CourierState{
-		CourierId: courierId,
-		State:     active,
-	}
-	err = mq.ProduceState(courierState, "Courier state")
+	err = mq.ProduceState(courier, "Courier state")
 	if err != nil {
 		http.Error(w, "Ошибка при форматировании ответа", http.StatusInternalServerError)
 		return
@@ -130,7 +137,7 @@ func GetState(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonResponse)
 }
 
-func CheckCourierState(w http.ResponseWriter, r *http.Request, redirectPath string) {
+func CheckCourierActive(w http.ResponseWriter, r *http.Request) {
 	courierId := GetCourierId(w, r)
 
 	ptr, err := storage.GetState(courierId)
@@ -139,19 +146,51 @@ func CheckCourierState(w http.ResponseWriter, r *http.Request, redirectPath stri
 		return
 	}
 
-	var active bool
+	var courier models.Courier
 	if ptr != nil {
-		active = *ptr
+		courier = *ptr
 	}
 
-	if !active {
-		http.Redirect(w, r, redirectPath, http.StatusSeeOther)
+	if !courier.Active {
+		http.Redirect(w, r, "http://localhost:8083/courier", http.StatusSeeOther)
 		return
 	}
 }
 
+func CheckCourierInProgress(w http.ResponseWriter, r *http.Request, cameFrom *string) (*string, error) {
+	courierId := GetCourierId(w, r)
+
+	ptr, err := storage.GetState(courierId)
+	if err != nil {
+		return nil, err
+	}
+
+	var courier models.Courier
+	if ptr != nil {
+		courier = *ptr
+	}
+
+	var path string
+	if courier.InProgress {
+		if cameFrom != nil && (*cameFrom == "in progress" || *cameFrom == "take order from shop"){
+			return nil, err
+		}
+
+		path = "http://localhost:8083/courier/in_progress"
+		return &path, nil
+
+	} else {
+		if cameFrom != nil && (*cameFrom == "in progress" || *cameFrom == "take order from shop") {
+			path = "http://localhost:8083/courier"
+			return &path, nil
+		}
+	}
+
+	return nil, nil
+}
+
 func TakeOrder(w http.ResponseWriter, r *http.Request) {
-	CheckCourierState(w, r, "http://localhost:8083/courier")
+	CheckCourierActive(w, r)
 
 	orderId, err := strconv.Atoi(r.FormValue("order_id"))
 	if err != nil {
@@ -159,8 +198,13 @@ func TakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ptr, err := storage.CheckOrderTaken(orderId)
+	id, ptr, err := storage.CheckOrderTaken(orderId)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if id == 0 {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -191,6 +235,12 @@ func TakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = storage.SetInProgress(courierId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	ptrOrderMessage, err := storage.GetFullOrderInfo(orderId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -202,24 +252,68 @@ func TakeOrder(w http.ResponseWriter, r *http.Request) {
 		tookOrderMessage = *ptrOrderMessage
 	}
 
-	tookOrderMessage.Status = "preparing"
+	ptrCourier, err := storage.GetState(courierId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var courier models.Courier
+	if ptrCourier != nil {
+		courier = *ptrCourier
+	}
+
 	tookOrderMessage.DeliveryStartedAt = time.Now()
-	tookOrderMessage.Courier = models.Courier{Id: uint(courierId)}
-	
+	tookOrderMessage.Courier = courier
+
 	err = mq.ProduceMessage(tookOrderMessage, "Order taken")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	tmpl, err := template.ParseFiles("front/pages/courier/order_taken.html")
+	http.Redirect(w, r, "http://localhost:8083/courier/in_progress", http.StatusSeeOther)
+}
+
+func TakeOrderFromShop(w http.ResponseWriter, r *http.Request) {
+	cameFrom := "take order from shop"
+
+	path, err := CheckCourierInProgress(w, r, &cameFrom)
 	if err != nil {
-		http.Error(w, err.Error(), 400)
-		log.Fatalf("StartPage: %s", err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
-	err = tmpl.Execute(w, nil)
+
+	if path != nil {
+		http.Redirect(w, r, *path, http.StatusSeeOther)
+		return
+	}
+
+	orderId, err := strconv.Atoi(r.FormValue("order_id"))
 	if err != nil {
-		http.Error(w, err.Error(), 500)
-		log.Fatalf("StartPage: %s", err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	status, err := storage.GetOrderStatus(orderId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if status != "order collected" {
+		tmpl, err := template.ParseFiles("front/pages/courier/not_yet.html")
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			log.Fatalf("StartPage: %s", err.Error())
+		}
+		err = tmpl.Execute(w, nil)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			log.Fatalf("StartPage: %s", err.Error())
+		}
+		return
+	} else {
+		
 	}
 }

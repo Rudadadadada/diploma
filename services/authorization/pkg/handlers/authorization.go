@@ -45,7 +45,7 @@ func CustomerAuthorization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ttl := time.Minute * 5
+	ttl := time.Minute * 15
 	err = redis.SetKeyWithTTL(tokenString, tokenString, ttl)
     if err != nil {
         http.Error(w, "Could not save token to Redis", http.StatusInternalServerError)
@@ -91,7 +91,7 @@ func CourierAuthorization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ttl := time.Minute * 5
+	ttl := time.Minute * 15
 	err = redis.SetKeyWithTTL(tokenString, tokenString, ttl)
     if err != nil {
         http.Error(w, "Could not save token to Redis", http.StatusInternalServerError)
@@ -135,7 +135,7 @@ func AdminAuthorization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ttl := time.Minute * 5
+	ttl := time.Minute * 15
 	err = redis.SetKeyWithTTL(tokenString, tokenString, ttl)
     if err != nil {
         http.Error(w, "Could not save token to Redis", http.StatusInternalServerError)

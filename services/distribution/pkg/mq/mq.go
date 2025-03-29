@@ -71,7 +71,7 @@ func ProduceMessage(msg models.OrderMessage, key string) error {
 
 func ParseMessageAndProduce(msg *kafka.Message) error {
 	var orderMessage models.OrderMessage
-	var courierMessage models.CourierState
+	var courierMessage models.Courier
 
 	key := string(msg.Key)
 
@@ -81,8 +81,8 @@ func ParseMessageAndProduce(msg *kafka.Message) error {
 			return err
 		}
 
-		storage.AddCourier(courierMessage.CourierId)
-		storage.SetState(courierMessage.CourierId, courierMessage.State)
+		storage.AddCourier(courierMessage)
+		storage.SetState(courierMessage.Id, courierMessage.Active)
 	} else {
 		err := json.Unmarshal(msg.Value, &orderMessage)
 		if err != nil {
@@ -98,13 +98,13 @@ func ParseMessageAndProduce(msg *kafka.Message) error {
 			}
 	
 			if len(courierStates) == 0 {
-				orderMessage.Status = "canceled because no couriers"
 				ProduceMessage(orderMessage, "No couriers")
 			} else {
 				orderMessage.Status = "order sent to couriers"
 				ProduceMessage(orderMessage, "Order sent to couriers")
 			}
 		case "Order taken":
+			storage.SetInProgress(orderMessage.Courier.Id)
 			ProduceMessage(orderMessage, "Order distributed")
 		}
 	}

@@ -23,7 +23,7 @@ func New() {
 		"enable.auto.commit": true,
 	})
 
-	topics := []string{"customer", "distribution"}
+	topics := []string{"customer", "distribution", "admin"}
 	Consumer.SubscribeTopics(topics, nil)
 }
 
@@ -78,9 +78,13 @@ func ParseMessageAndProduce(msg *kafka.Message) error {
 		orderMessage.Status = "waiting for courier"
 		ProduceMessage(orderMessage, "Waiting for courier")
 	case "No couriers":
+		orderMessage.Status = "canceled because no couriers"
 		ProduceMessage(orderMessage, "No couriers")
 	case "Order distributed":
+		orderMessage.Status = "preparing"
 		ProduceMessage(orderMessage, "Order distributed")
+	case "Order collected":
+		ProduceMessage(orderMessage, "Order collected")
 	}
 
 	return nil

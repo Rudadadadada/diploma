@@ -1,8 +1,8 @@
 package mq
 
 import (
-	"diploma/services/customer/pkg/storage"
 	"diploma/services/customer/pkg/models"
+	"diploma/services/customer/pkg/storage"
 	"encoding/json"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"log"
@@ -24,7 +24,7 @@ func New() {
 		"enable.auto.commit": true,
 	})
 
-	topics := []string{"order"}
+	topics := []string{"order", "admin"}
 	Consumer.SubscribeTopics(topics, nil)
 }
 
@@ -66,18 +66,61 @@ func ProduceMessage(msg models.OrderMessage, key string) error {
 	return nil
 }
 
-func ParseMessage(msg *kafka.Message) (error) {
+func ParseMessage(msg *kafka.Message) error {
 	var orderMessage models.OrderMessage
+	var syncDatabasesMessage models.SyncDatabasesMessage
 	key := string(msg.Key)
 
-	err := json.Unmarshal(msg.Value, &orderMessage)
-	if err != nil {
-		return err
+	if key != "Sync databases" {
+		err := json.Unmarshal(msg.Value, &orderMessage)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := json.Unmarshal(msg.Value, &syncDatabasesMessage)
+		if err != nil {
+			return err
+		}
 	}
 
 	switch key {
+	case "Sync databases":
+		err := storage.SyncDatabases(syncDatabasesMessage)
+		if err != nil {
+			return err
+		}
 	case "Waiting for courier", "No couriers", "Order distributed":
 		storage.UpdateStatus(orderMessage.OrderId, orderMessage.Status)
+	case "Order collected":
+		ptrChanged, err := storage.GetChangesAndUpdate(orderMessage.OrderItems, orderMessage.OrderId, int(orderMessage.TotalCost))
+		if err != nil {
+			return err
+		}
+
+		var changed bool
+		if ptrChanged != nil {
+			changed = *ptrChanged
+		}
+
+		if !changed {
+			storage.UpdateStatus(orderMessage.OrderId, "order collected")
+		} else {
+			ptrIsEmpty, err := storage.CheckOrderIsEmpty(orderMessage.OrderId)
+			if err != nil {
+				return err
+			}
+
+			var isEmpty bool
+			if ptrIsEmpty != nil {
+				isEmpty = *ptrIsEmpty
+			}
+
+			if !isEmpty {
+				storage.UpdateStatus(orderMessage.OrderId, "order collected with some changes")
+			} else {
+				storage.UpdateStatus(orderMessage.OrderId, "declined because no products left")
+			}
+		}
 	}
 
 	return nil

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"diploma/services/admin/pkg/models"
+	"diploma/services/admin/pkg/mq"
 	"diploma/services/admin/pkg/storage"
 	"html/template"
 	"net/http"
@@ -76,6 +77,18 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	syncDatabasesMessage, err := storage.SyncDatabases()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = mq.ProduceSyncMessage(*syncDatabasesMessage)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	newProduct := models.Product{
 		Name: name,
 		Amount: uint(cost),
@@ -125,6 +138,23 @@ func RemoveProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmpl, err := template.ParseFiles("front/pages/admin/success.html")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	syncDatabasesMessage, err := storage.SyncDatabases()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = mq.ProduceSyncMessage(*syncDatabasesMessage)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

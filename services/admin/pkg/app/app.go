@@ -21,10 +21,20 @@ func kafkaLaunch() {
 	select {}
 }
 
-func Launch() {
+func serverLaunch() {
 	redis.New()
 	storage.PostgresCfg.GetConfig("admin")
 	err := storage.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	syncDatabasesMessage, err := storage.SyncDatabases()
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	err = mq.ProduceSyncMessage(*syncDatabasesMessage)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -55,4 +65,11 @@ func Launch() {
 	if err := http.ListenAndServe(":8080", router); err != nil {
 		log.Fatalf("failed to start server: %v", err)
 	}
+}
+
+func Launch() {
+	go kafkaLaunch()
+	go serverLaunch()
+
+	select {}
 }

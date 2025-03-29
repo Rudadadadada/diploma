@@ -52,6 +52,7 @@
             <th>Выбрать</th>
         </tr>
         {{range .}}
+        {{if gt .Amount 0}}
         <tr>
             <td>{{.Name}}</td>
             <td>{{.Amount}}</td>
@@ -63,6 +64,7 @@
                 <input type="checkbox" name="product_{{.Id}}" value="true">
             </td>
         </tr>
+        {{end}}
         {{end}}
     </table>
     <br>

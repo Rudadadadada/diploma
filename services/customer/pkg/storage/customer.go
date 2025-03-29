@@ -90,7 +90,7 @@ func SelectOrderIdAndCreatedAt(bucketId int, customerId int) (int, time.Time, er
 }
 
 func ViewOrders(customerId int) ([]models.Order, error) {
-	rows, err := db.Query(`select * from orders where customer_id = $1`, customerId)
+	rows, err := db.Query(`select * from orders where customer_id = $1 order by id`, customerId)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,9 @@
-CREATE TABLE IF NOT EXISTS activity (
+CREATE TABLE IF NOT EXISTS couriers (
     id INT PRIMARY KEY,
-    active BOOL NOT NULL
+    active BOOL NOT NULL,
+    in_progress BOOL NOT NULL,
+    rating INT NOT NULL,
+    order_delivered INT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS orders (
@@ -9,7 +12,10 @@ CREATE TABLE IF NOT EXISTS orders (
     courier_id INT NOT NULL,
     total_cost DECIMAL(10, 2) NOT NULL,
     created_at TIMESTAMP,
-    took BOOL NOT NULL
+    delivery_started TIMESTAMP,
+    delivered_at TIMESTAMP,
+    took BOOL NOT NULL,
+    status VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS order_items (

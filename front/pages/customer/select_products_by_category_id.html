@@ -2,77 +2,319 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="/front/styles/main.css">
+    <title>Выбор товаров</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        table {
-            border-collapse: collapse;
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a56d4;
+            --secondary: #f5f5f5;
+            --text: #333;
+            --border: #ddd;
+            --light-bg: #fff;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --disabled-color: #ddd;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            line-height: 1.6;
+            color: var(--text);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0f5ff 100%);
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .products-container {
+            background: var(--light-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .product-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .product-quantity {
+            margin: 15px 0;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-control input {
+            width: 50px;
+            padding: 5px;
+            text-align: center;
+            margin: 0 5px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .quantity-control button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .quantity-control button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .add-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 10px 15px;
             width: 100%;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
         }
 
-        th, td {
-            text-align: left;
-            padding: 8px;
+        .add-btn.selected {
+            background-color: #2196F3;
         }
 
-        th {
-            background-color: #333;
+        .add-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .add-btn i {
+            margin-right: 8px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: var(--border-radius);
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .primary-btn {
+            background-color: var(--primary);
             color: white;
         }
 
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
+        .primary-btn:disabled {
+            background-color: var(--disabled-color);
+            cursor: not-allowed;
+        }
+
+        .primary-btn:not(:disabled):hover {
+            background-color: var(--primary-hover);
+        }
+
+        .secondary-btn {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .secondary-btn:hover {
+            background-color: var(--secondary);
+        }
+
+        .selected-count {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 0.9em;
+            color: #666;
+            display: none;
+        }
+
+        .cost-badge, .amount-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .cost-badge {
+            background-color: #ffeb3b;
+            color: #333;
+        }
+        
+        .amount-badge {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        @media (max-width: 768px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
     <script>
-        function updateButtonState() {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            const isAnyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
-            document.getElementById('addToBucketButton').disabled = !isAnyChecked;
+        function adjustQuantity(input, increment) {
+            const currentValue = parseInt(input.value);
+            const newValue = currentValue + increment;
+            if (newValue >= parseInt(input.min) && newValue <= parseInt(input.max)) {
+                input.value = newValue;
+            }
         }
 
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', updateButtonState);
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectedProducts = new Set();
+            const addButtons = document.querySelectorAll('.add-product-btn');
+            const selectedCount = document.querySelector('.selected-count strong');
+            const addToBucketButton = document.getElementById('addToBucketButton');
+            const selectedProductsInput = document.getElementById('selectedProducts');
+            
+            addButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    
+                    if (selectedProducts.has(productId)) {
+                        // Already selected - remove selection
+                        this.innerHTML = '<i class="fas fa-cart-plus"></i> Добавить';
+                        this.classList.remove('selected');
+                        selectedProducts.delete(productId);
+                    } else {
+                        // Selecting product
+                        this.innerHTML = '<i class="fas fa-check-circle"></i> Выбрано';
+                        this.classList.add('selected');
+                        selectedProducts.add(productId);
+                    }
+                    
+                    // Update selection count and button state
+                    updateSelection();
+                });
             });
 
-            updateButtonState();
+            document.querySelectorAll('.quantity-control button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const input = this.parentElement.querySelector('input');
+                    const increment = parseInt(this.dataset.increment);
+                    adjustQuantity(input, increment);
+                });
+            });
+            
+            function updateSelection() {
+                const count = selectedProducts.size;
+                selectedCount.textContent = count;
+                addToBucketButton.disabled = count === 0;
+                
+                // Update hidden input with selected products
+                selectedProductsInput.value = Array.from(selectedProducts).join(',');
+            }
         });
     </script>
 </head>
 <body>
-<h1>Продукты:</h1>
-<form action="/customer/insert_into_bucket" method="post">
-    <table>
-        <tr>
-            <th>Наименование продукта</th>
-            <th>Оставшееся кол-во</th>
-            <th>Стоимость</th>
-            <th>Количество</th>
-            <th>Выбрать</th>
-        </tr>
-        {{range .}}
-        {{if gt .Amount 0}}
-        <tr>
-            <td>{{.Name}}</td>
-            <td>{{.Amount}}</td>
-            <td>{{.Cost}}</td>
-            <td>
-                <input type="number" name="amount_{{.Id}}" min="1" max="{{.Amount}}" value="1">
-            </td>
-            <td>
-                <input type="checkbox" name="product_{{.Id}}" value="true">
-            </td>
-        </tr>
-        {{end}}
-        {{end}}
-    </table>
-    <br>
-    <button id="addToBucketButton" style="width: 100%;">Добавить в корзину</button>
-</form>
-<br>
-<form action="/customer/select_category" method="get">
-    <button style="width: 100%;">Вернуться назад</button>
-</form>
+    <h1>Выберите товары</h1>
+    <div class="products-container">
+        <form action="/customer/insert_into_bucket" method="post" id="productsForm">
+            <div class="product-grid">
+                {{range .}}
+                {{if gt .Amount 0}}
+                <div class="product-card">
+                    <div class="product-name">{{.Name}}</div>
+                    <div class="product-meta">
+                        <span class="amount-badge">{{.Amount}} шт.</span>
+                        <span class="cost-badge">{{.Cost}} ₽</span>
+                    </div>
+                    <div class="product-quantity">
+                        <label>Количество:</label>
+                        <div class="quantity-control">
+                            <button type="button" data-increment="-1">-</button>
+                            <input type="number" name="amount_{{.Id}}" min="1" max="{{.Amount}}" value="1">
+                            <button type="button" data-increment="1">+</button>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="add-btn add-product-btn" data-product-id="{{.Id}}">
+                        <i class="fas fa-cart-plus"></i> Выбрать
+                    </button>
+                </div>
+                {{end}}
+                {{end}}
+            </div>
+            
+            <input type="hidden" id="selectedProducts" name="selectedProducts" value="">
+            
+            <div class="selected-count">
+                <strong>0</strong>
+            </div>
+            
+            <div class="action-buttons">
+                <button type="submit" class="action-btn primary-btn" id="addToBucketButton" disabled>
+                    <i class="fas fa-shopping-cart"></i> Добавить в корзину
+                </button>
+            </div>
+        </form>
+        <form action="/customer/select_category" method="get">
+            <div class="action-buttons">
+                <button type="submit" class="action-btn secondary-btn">
+                    <i class="fas fa-arrow-left"></i> Вернуться назад
+                </button>
+            </div>
+        </form>
+    </div>
 </body>
 </html>

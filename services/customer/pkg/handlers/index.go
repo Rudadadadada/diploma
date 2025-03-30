@@ -93,30 +93,12 @@ func InsertedIntoBucketPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func BucketEmptyPage(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("front/pages/customer/bucket_empty.html")
-	if err != nil {
-		http.Error(w, err.Error(), 400)
-		log.Fatalf("StartPage: %s", err.Error())
-	}
-	err = tmpl.Execute(w, nil)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		log.Fatalf("StartPage: %s", err.Error())
-	}
-}
-
 func BucketPage(w http.ResponseWriter, r *http.Request) {
 	customerId := GetCustomerId(w, r)
 	bucketItems, bucketId, err := storage.ViewBucket(customerId)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if len(bucketItems) == 0 {
-		BucketEmptyPage(w, r)
 		return
 	}
 

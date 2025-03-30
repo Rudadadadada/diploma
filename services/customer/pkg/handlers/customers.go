@@ -4,6 +4,7 @@ import (
 	"diploma/services/customer/pkg/models"
 	"diploma/services/customer/pkg/redis"
 	"diploma/services/customer/pkg/storage"
+	"encoding/json"
 
 	"diploma/services/customer/pkg/mq"
 	"html/template"
@@ -210,4 +211,21 @@ func ViewOrderItems(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+}
+
+func GetOrderStatuses(w http.ResponseWriter, r *http.Request) {
+	customerId := GetCustomerId(w, r)
+
+	statuses, err := storage.GetOrderStatuses(customerId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	response := map[string][]models.OrderStatus{
+		"statuses": statuses,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

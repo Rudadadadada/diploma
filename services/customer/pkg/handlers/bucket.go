@@ -4,6 +4,7 @@ import (
 	"diploma/services/customer/pkg/storage"
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	// "diploma/services/customer/pkg/storage"
 	// "html/template"
@@ -28,45 +29,44 @@ func InsertIntoBucket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	productsStr := r.FormValue("selectedProducts")
+	if productsStr == "" {
+		http.Error(w, "No products selected", http.StatusBadRequest)
+		return
+	}
+
+	productIds := strings.Split(productsStr, ",")
 	productsWithAmount := map[int]int{}
-	for key, values := range r.Form {
-		if keyPrefix := "product_"; len(key) > len(keyPrefix) && key[:len(keyPrefix)] == keyPrefix {
-			productId := key[len(keyPrefix):]
+	for _, productIdStr := range productIds {
+		productId, err := strconv.Atoi(productIdStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-			if values[0] == "true" {
-				amountKey := "amount_" + productId
-				amountValues, amountExists := r.Form[amountKey]
-
-				if amountExists && len(amountValues) > 0 {
-					amount, err := strconv.Atoi(amountValues[0])
-					if err != nil {
-						http.Error(w, err.Error(), http.StatusBadRequest)
-						return
-					}
-
-					intProductId, err := strconv.Atoi(productId)
-					if err != nil {
-						http.Error(w, err.Error(), http.StatusBadRequest)
-						return
-					}
-					productsWithAmount[intProductId] = amount
-				}
+		amountKey := "amount_" + productIdStr
+		amountValues, amountExists := r.Form[amountKey]
+		if amountExists && len(amountValues) > 0 {
+			amount, err := strconv.Atoi(amountValues[0])
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
 			}
+			productsWithAmount[productId] = amount
 		}
 	}
 
 	customerId := GetCustomerId(w, r)
 
-	err = storage.InertIntoBucket(customerId, productsWithAmount)
-
+	err = storage.InsertIntoBucket(customerId, productsWithAmount)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-
 	InsertedIntoBucketPage(w, r)
 }
+
 
 func RemoveItemFromBucket(w http.ResponseWriter, r *http.Request) {
 	var req RemoveItemRequest

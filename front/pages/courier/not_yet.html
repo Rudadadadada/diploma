@@ -2,13 +2,254 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="/static/main.css">
-    <title>Заказ еще не собран</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заказ еще не собран | Курьерская служба</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        
+        :root {
+            --primary-color: #ff6b6b;
+            --secondary-color: #ff9e7d;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transform: translateY(-20px);
+            opacity: 0;
+            animation: fadeInUp 0.5s 0.2s forwards;
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        h1 {
+            color: var(--dark-color);
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 700;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        h1:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border-radius: 2px;
+        }
+        
+        .icon-wrapper {
+            font-size: 80px;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+            position: relative;
+        }
+        
+        .icon-wrapper i {
+            transform: scale(1);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .message {
+            color: #7f8c8d;
+            margin-bottom: 35px;
+            line-height: 1.6;
+            font-size: 18px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn:hover:before {
+            left: 100%;
+        }
+        
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 40px auto 30px;
+            max-width: 400px;
+            position: relative;
+        }
+        
+        .steps:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #dfe6e9;
+            z-index: 1;
+        }
+        
+        .step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #dfe6e9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #7f8c8d;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step.active {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: white;
+        }
+        
+        .step.complete {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .step.complete:after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .message {
+                font-size: 16px;
+            }
+            
+            .btn {
+                padding: 12px 24px;
+            }
+        }
+    </style>
 </head>
 <body>
-<h1>Не так быстро! Заказ еще не собран.</h1>
-<form action="/courier/in_progress" target="_self">
-    <button>Вернуться назад</button>
-</form>
+    <div class="container">
+        <div class="icon-wrapper">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <h1>Не так быстро! Заказ еще не собран.</h1>
+        <p class="message">
+            Прежде чем продолжить, пожалуйста, дождитесь подтверждения о готовности заказа. 
+            Как только заказ будет собран, вы сможете продолжить работу.
+        </p>
+        
+        <div class="steps">
+            <div class="step complete">1</div>
+            <div class="step active">2</div>
+            <div class="step">3</div>
+        </div>
+        
+        <form action="/courier/in_progress" target="_self">
+            <button type="submit" class="btn">
+                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Вернуться назад
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Небольшая интерактивность для улучшения UX
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.querySelector('.btn');
+            
+            btn.addEventListener('mouseenter', function() {
+                this.querySelector('i').style.transform = 'translateX(-5px)';
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                this.querySelector('i').style.transform = 'translateX(0)';
+            });
+        });
+    </script>
 </body>
 </html>

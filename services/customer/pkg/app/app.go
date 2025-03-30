@@ -48,6 +48,8 @@ func serverLaunch() {
 	router.With(handlers.JWTMiddleware).Post("/customer/insert_into_bucket", handlers.InsertIntoBucket)
 	router.With(handlers.JWTMiddleware).Post("/customer/bucket/remove_item_from_bucket", handlers.RemoveItemFromBucket)
 
+	router.With(handlers.JWTMiddleware).Get("/order/get_statuses", handlers.GetOrderStatuses)
+
 	fmt.Println("Customer server is running on port 8081")
 	if err := http.ListenAndServe(":8081", router); err != nil {
 		log.Fatalf("failed to start server: %v", err)

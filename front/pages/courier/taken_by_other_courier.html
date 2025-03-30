@@ -2,14 +2,159 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="/static/main.css">
-    <title>Извините, заказ уже взят другим курьером</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заказ уже взят | Курьерская служба</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-dark: #3a56d4;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --border-radius: 10px;
+            --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0f5ff 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 40px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, #ff5e62, #ff9966);
+        }
+        
+        .icon {
+            font-size: 80px;
+            color: #ff5e62;
+            margin-bottom: 20px;
+            animation: bounce 1.5s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 28px;
+        }
+        
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 18px;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #5a6fd1, #6a3ca1);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        @media (max-width: 640px) {
+            .container {
+                padding: 30px 20px;
+                margin: 0 15px;
+            }
+            
+            .icon {
+                font-size: 60px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            p {
+                font-size: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Извините, заказ уже взят другим курьером</h1>
-    <h1>Возьмите другой заказ</h1>
-    <form action="/courier/view_orders" target="_self">
-        <button>Посмотреть доступные заказы</button>
-    </form>
+    <div class="container">
+        <div class="icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h1>Извините, этот заказ уже взят</h1>
+        <p>Другой курьер уже откликнулся на этот заказ раньше вас. 
+           Вы можете выбрать другой доступный заказ из списка.</p>
+        
+        <form action="/courier/view_orders" target="_self">
+            <button type="submit" class="btn">
+                <i class="fas fa-list"></i>
+                Посмотреть доступные заказы
+            </button>
+        </form>
+        
+    </div>
 </body>
 </html>

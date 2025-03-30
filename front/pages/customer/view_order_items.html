@@ -1,55 +1,206 @@
 <!DOCTYPE html>
 <html lang="ru">
-<html>
+
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="/front/styles/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детали заказа №{{.OrderId}}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
+        :root {
+            --primary-color: #4361ee;
+            --primary-hover: #3a56d4;
+            --background: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --success-color: #4bb543;
         }
 
-        th, td {
-            text-align: left;
-            padding: 8px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-size: 28px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .order-id {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         th {
-            background-color: #333;
+            background-color: var(--primary-color);
             color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 500;
         }
 
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
+        th:first-child {
+            border-top-left-radius: 8px;
+        }
+
+        th:last-child {
+            border-top-right-radius: 8px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+            padding: 14px;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #888;
+            font-size: 14px;
+        }
+
+        .total-row {
+            font-weight: 700;
+            background-color: rgba(67, 97, 238, 0.1) !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            th,
+            td {
+                padding: 12px 10px;
+                font-size: 14px;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
+
 <body>
-<h1>Содержимое заказа № {{.OrderId}}:</h1>
-<form>
-    <table>
-        <thead>
-            <tr>
-                <th>Наименование продукта</th>
-                <th>Количество</th>
-                <th>Стоимость</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{range .OrderItems}}
-            <tr>
-                <td>{{.Name}}</td>
-                <td>{{.Amount}}</td>
-                <td>{{.TotalCost}}</td>
-            </tr>
-            {{end}}
-        </tbody>
-    </table>
-</form>
-<br>
-<form action="/customer/view_orders" method="get">
-    <button style="width: 100%;">Вернуться назад</button>
-</form>
+    <div class="container">
+        <div class="card">
+            <h1><i class="fas fa-file-invoice"></i> Детали заказа №<span class="order-id">{{.OrderId}}</span></h1>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-box-open"></i> Наименование</th>
+                            <th><i class="fas fa-hashtag"></i> Количество</th>
+                            <th><i class="fas fa-ruble-sign"></i> Стоимость</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .OrderItems}}
+                        <tr>
+                            <td>{{.Name}}</td>
+                            <td>{{.Amount}}</td>
+                            <td>{{.TotalCost}} ₽</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+
+            <form action="/customer/view_orders" method="get">
+                <button type="submit" class="btn btn-block">
+                    <i class="fas fa-arrow-left"></i> Вернуться к списку заказов
+                </button>
+            </form>
+        </div>
+    </div>
 </body>
+
 </html>

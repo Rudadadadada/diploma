@@ -11,6 +11,7 @@ psql -U rudadadadada -d admin
 redis-server в отдельном терминале
 
 brew install zookeeper
+zookeeper-server-start /opt/homebrew/etc/kafka/zookeeper.properties
 вначале зукипер, потом кафка
 
 create topic:

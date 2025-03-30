@@ -163,3 +163,27 @@ func UpdateStatus(orderId int, status string) error {
 
 	return nil
 }
+
+func GetOrderStatuses(customerId int) ([]models.OrderStatus, error) {
+	rows, err := db.Query(`select id, status from orders where customer_id = $1`, customerId)
+	if err != nil {
+		return nil, err
+	}
+
+	var statuses []models.OrderStatus
+	for rows.Next() {
+		var tmp models.OrderStatus
+		err = rows.Scan(&tmp.Id, &tmp.Status)
+		if err != nil {
+			return nil, err
+		}
+		statuses = append(statuses, tmp)
+	}
+
+	if err = rows.Close(); err != nil {
+		return nil, err
+	}
+
+
+	return statuses, nil
+}

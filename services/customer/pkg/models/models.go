@@ -53,3 +53,8 @@ type OrderMessage struct {
 	Courier           Courier      `json:"courier"`
 	OrderItems        []BucketItem `json:"bucket_items"`
 }
+
+type OrderStatus struct {
+    Id     int    `json:"id"`
+    Status string `json:"status"`
+}

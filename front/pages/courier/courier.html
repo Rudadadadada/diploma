@@ -2,12 +2,159 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="/static/main.css">
-    <title>Курьер</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль курьера | Курьерская служба</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-dark: #3a56d4;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --border-radius: 10px;
+            --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0f5ff 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .profile-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 2rem;
+        }
+
+        .profile-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2.5rem;
+            text-align: center;
+            transform: translateY(0);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .profile-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #4361ee, #4cc9f0);
+        }
+
+        .profile-header {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .profile-header h2 {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .profile-btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            width: 100%;
+            transition: var(--transition);
+            box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2);
+            margin-top: 1rem;
+        }
+
+        .profile-icon {
+            background-color: var(--primary-color);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .profile-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(67, 97, 238, 0.3);
+        }
+
+        .profile-btn:active {
+            transform: translateY(0);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .profile-card {
+                padding: 1.5rem;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
     <script>
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             const stateButton = document.querySelector('#stateButton');
             const takeOrderButton = document.querySelector('#takeOrderButton');
+            const statusBadge = document.querySelector('#statusBadge');
 
             fetch('/courier/get_state')
                 .then(response => response.json())
@@ -16,15 +163,21 @@
 
                     if (active) {
                         stateButton.textContent = 'Выйти с линии';
-                        takeOrderButton.style.display = 'block';
+                        stateButton.className = 'profile-btn btn-danger';
+                        takeOrderButton.classList.remove('hidden');
+                        statusBadge.textContent = 'На линии';
+                        statusBadge.classList.add('active');
                     } else {
                         stateButton.textContent = 'Выйти на линию';
-                        takeOrderButton.style.display = 'none';
+                        stateButton.className = 'profile-btn';
+                        takeOrderButton.classList.add('hidden');
+                        statusBadge.textContent = 'Не на линии';
+                        statusBadge.classList.remove('active');
                     }
                 })
                 .catch(error => console.error('Ошибка при получении состояния:', error));
-
-            takeOrderButton.addEventListener('click', function(event) {
+            
+            takeOrderButton.addEventListener('click', function (event) {
                 event.preventDefault();
                 window.location.href = '/courier/view_orders';
             });
@@ -32,15 +185,35 @@
     </script>
 </head>
 <body>
-<h1>Курьер</h1>
-<form action="/courier/view_orders" target="_self"></form>
-    <button id="takeOrderButton" style="display: none;">Посмотреть доступные заказы</button>
-</form>
-    <form action="/courier/set_state" target="_self">
-    <button id="stateButton">Выйти на линию</button>
-</form>
-<form action="/courier/logout" target="_self">
-    <button>Разлогиниться</button>
-</form>
+
+    <div class="profile-container">
+        <div class="profile-card">
+            <div class="profile-icon">
+                <i class="fas fa-truck"></i>
+            </div>
+            <div class="profile-header">
+                <h2>Профиль курьера</h2>
+                <p>Управление статусом работы</p>
+                <span id="statusBadge" class="status-badge">Не на линии</span>
+            </div>
+
+            <button id="takeOrderButton" class="profile-btn hidden">
+                <i class="fas fa-box"></i> Посмотреть доступные заказы
+            </button>
+
+            <form action="/courier/set_state" target="_self">
+                <button id="stateButton" type="submit" class="profile-btn">
+                    <i class="fas fa-toggle-on"></i> Выйти на линию
+                </button>
+            </form>
+
+            <form action="/courier/logout" target="_self">
+                <button type="submit" class="profile-btn profile-btn-outline">
+                    <i class="fas fa-sign-out-alt"></i> Выйти из системы
+                </button>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>

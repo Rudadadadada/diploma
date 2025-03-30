@@ -3,74 +3,349 @@
 
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="/front/styles/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина покупок</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #f8f9fc;
+            --accent-color: #e74a3b;
+            --text-color: #333;
+            --light-gray: #f2f2f2;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 20px 0 40px;
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 2.5rem;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background-color: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
         table {
-            border-collapse: collapse;
             width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
         }
 
         th,
         td {
+            padding: 15px;
             text-align: left;
-            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         th {
-            background-color: #333;
+            background-color: var(--primary-color);
             color: white;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: rgba(78, 115, 223, 0.05);
         }
 
         tr:nth-child(even) {
-            background-color: #f2f2f2;
+            background-color: var(--secondary-color);
+        }
+
+        .item-quantity {
+            width: 70px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .item-quantity:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(78, 115, 223, 0.2);
+        }
+
+        .delete-button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .delete-button:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .total-summary {
+            background-color: var(--secondary-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 30px;
+            text-align: right;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .total-summary strong {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2e59d9;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+
+        /* Анимации */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .empty-cart {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .empty-cart i {
+            font-size: 50px;
+            color: #4361ee;
+            margin-bottom: 10px;
+        }
+
+        .empty-cart h3 {
+            font-size: 24px;
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .empty-cart p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        tr {
+            animation: fadeIn 0.3s ease-out;
+            animation-fill-mode: both;
+        }
+
+        tr:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        tr:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        tr:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        tr:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        tr:nth-child(5) {
+            animation-delay: 0.5s;
         }
     </style>
 </head>
 
 <body>
-    <h1>Ваша корзина:</h1>
-    <form id="update-bucket-form" action="/customer/make_order" method="post">
-        <table>
-            <thead>
-                <tr>
-                    <th>Наименование продукта</th>
-                    <th>Количество</th>
-                    <th>Общая стоимость</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{range .BucketItems}}
-                <tr>
-                    <td>{{.Name}}</td>
-                    <td>
-                        <input type="number" class="item-quantity" name="amount_{{.Id}}" min="1" max="{{.Amount}}"
-                            value="{{.Amount}}">
-                    </td>
-                    <td>{{.TotalCost}}</td>
-                    <td>
-                        <button type="button" class="delete-button" data-product-id="{{.Id}}"
-                            data-bucket-id="{{$.BucketId}}">Удалить</button>
-                    </td>
-                </tr>
-                {{end}}
-            </tbody>
-        </table>
-        <div style="margin-top: 20px;">
-            <strong>Общая стоимость: {{.AllProductsCost}}</strong>
+    <div class="container">
+        <h1><i class="fas fa-shopping-basket"></i> Ваша корзина</h1>
+
+        <div class="card">
+            {{if .BucketItems}}
+            <form id="update-bucket-form" action="/customer/make_order" method="post">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Наименование продукта</th>
+                            <th>Количество</th>
+                            <th>Общая стоимость</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .BucketItems}}
+                        <tr>
+                            <td>{{.Name}}</td>
+                            <td>
+                                <input type="number" class="item-quantity" name="amount_{{.Id}}" min="1"
+                                    max="{{.Amount}}" value="{{.Amount}}">
+                            </td>
+                            <td>{{.TotalCost}} ₽</td>
+                            <td>
+                                <button type="button" class="delete-button" data-product-id="{{.Id}}"
+                                    data-bucket-id="{{$.BucketId}}">
+                                    <i class="fas fa-trash-alt"></i> Удалить
+                                </button>
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+
+                <div class="total-summary">
+                    Общая стоимость: <strong>{{.AllProductsCost}} ₽</strong>
+                </div>
+
+                <input type="hidden" name="bucket_id" value="{{.BucketId}}">
+                <input type="hidden" name="all_product_cost" value="{{.AllProductsCost}}">
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-credit-card"></i> Оформить заказ
+                    </button>
+                </div>
+            </form>
+            {{else}}
+            <div class="empty-cart">
+                <i class="fas fa-shopping-basket"></i>
+                <h3>Ваша корзина пуста!</h3>
+                <p>Кажется, вы еще не добавили товары в корзину. Посмотрите наш каталог и начните покупки!</p>
+            </div>
+            {{end}}
+            <form action="/customer" method="get">
+                <div class="button-group">
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Вернуться назад
+                    </button>
+                </div>
+            </form>
         </div>
-        <input type="hidden" name="bucket_id" value="{{.BucketId}}">
-        <input type="hidden" name="all_product_cost" value="{{.AllProductsCost}}">
-        <button style="width: 100%;">Сделать заказ</button>
-    </form>
-    <form action="/customer" method="get">
-        <button style="width: 100%;">Вернуться назад</button>
-    </form>
+    </div>
+
     <script>
         document.querySelectorAll('.delete-button').forEach(button => {
             button.addEventListener('click', function () {
+                if (!confirm('Вы уверены, что хотите удалить этот товар из корзины?')) {
+                    return;
+                }
+
                 const productId = parseInt(this.dataset.productId, 10);
                 const bucketId = parseInt(this.dataset.bucketId, 10);
+
+                const button = this;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Удаление...';
+                button.disabled = true;
 
                 fetch('/customer/bucket/remove_item_from_bucket', {
                     method: 'POST',
@@ -91,14 +366,24 @@
                     })
                     .then(data => {
                         if (data.success) {
-                            console.log('Элемент успешно удален');
-                            location.reload();
+                            // Анимация удаления строки
+                            const row = button.closest('tr');
+                            row.style.opacity = '0';
+                            row.style.transform = 'translateX(-100px)';
+                            setTimeout(() => {
+                                location.reload();
+                            }, 300);
                         } else {
-                            console.error('Ошибка удаления:', data.message);
+                            button.innerHTML = '<i class="fas fa-trash-alt"></i> Удалить';
+                            button.disabled = false;
+                            alert('Ошибка: ' + data.message);
                         }
                     })
                     .catch(error => {
                         console.error('Ошибка при выполнении запроса:', error);
+                        button.innerHTML = '<i class="fas fa-trash-alt"></i> Удалить';
+                        button.disabled = false;
+                        alert('Произошла ошибка при удалении товара. Пожалуйста, попробуйте снова.');
                     });
             });
         });

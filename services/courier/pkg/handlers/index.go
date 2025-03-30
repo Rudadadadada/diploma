@@ -167,3 +167,53 @@ func InProgressPage(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("StartPage: %s", err.Error())
 	}
 }
+
+func NotYetPage(w http.ResponseWriter, r *http.Request) {
+	cameFrom := "not yet"
+	path, err := CheckCourierInProgress(w, r, &cameFrom)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if path != nil {
+		http.Redirect(w, r, *path, http.StatusSeeOther)
+		return
+	}
+
+	tmpl, err := template.ParseFiles("front/pages/courier/not_yet.html")
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		log.Fatalf("StartPage: %s", err.Error())
+	}
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Fatalf("StartPage: %s", err.Error())
+	}
+}
+
+func DeclinedPage(w http.ResponseWriter, r *http.Request) {
+	cameFrom := "declined"
+	path, err := CheckCourierInProgress(w, r, &cameFrom)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if path != nil {
+		http.Redirect(w, r, *path, http.StatusSeeOther)
+		return
+	}
+
+	tmpl, err := template.ParseFiles("front/pages/courier/declined.html")
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		log.Fatalf("StartPage: %s", err.Error())
+	}
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Fatalf("StartPage: %s", err.Error())
+	}
+}

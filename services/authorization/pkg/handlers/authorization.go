@@ -4,7 +4,7 @@ import (
 	"diploma/services/authorization/pkg/models"
 	"diploma/services/authorization/pkg/redis"
 	"diploma/services/authorization/pkg/storage"
-	_ "log"
+	"html/template"
 	"net/http"
 	"time"
 
@@ -18,7 +18,7 @@ var jwtKey = []byte("randomString")
 
 func CustomerAuthorization(w http.ResponseWriter, r *http.Request) {
 	customer := models.Customer{
-		Email:        r.FormValue("email"),
+		Email:        r.FormValue("customer"),
 		HashPassword: r.FormValue("password"),
 	}
 
@@ -28,11 +28,11 @@ func CustomerAuthorization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(dbCustomer.HashPassword), []byte(customer.HashPassword))
-	if err != nil {
-		http.Error(w, "Неверная почта или пароль", http.StatusBadRequest)
-		return
-	}
+	if err := bcrypt.CompareHashAndPassword([]byte(dbCustomer.HashPassword), []byte(customer.HashPassword)); err != nil {
+        t, _ := template.ParseFiles("front/pages/authorization/customer_authorization.html")
+        t.Execute(w, map[string]string{"error": "Неверная почта или пароль"})
+        return
+    }
 
 	token := jwt.New(jwt.SigningMethodHS256)
 	claimes := token.Claims.(jwt.MapClaims)
@@ -64,7 +64,7 @@ func CustomerAuthorization(w http.ResponseWriter, r *http.Request) {
 
 func CourierAuthorization(w http.ResponseWriter, r *http.Request) {
 	courier := models.Courier{
-		Email:        r.FormValue("email"),
+		Email:        r.FormValue("courier"),
 		HashPassword: r.FormValue("password"),
 	}
 
@@ -74,11 +74,11 @@ func CourierAuthorization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(dbCourier.HashPassword), []byte(courier.HashPassword))
-	if err != nil {
-		http.Error(w, "Неверная почта или пароль", http.StatusBadRequest)
-		return
-	}
+	if err := bcrypt.CompareHashAndPassword([]byte(dbCourier.HashPassword), []byte(courier.HashPassword)); err != nil {
+        t, _ := template.ParseFiles("front/pages/authorization/courier_authorization.html")
+        t.Execute(w, map[string]string{"error": "Неверная почта или пароль"})
+        return
+    }
 
 	token := jwt.New(jwt.SigningMethodHS256)
 	claimes := token.Claims.(jwt.MapClaims)
@@ -120,11 +120,11 @@ func AdminAuthorization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(dbHashPassword), []byte(admin.HashPassword))
-	if err != nil {
-		http.Error(w, "Неверная почта или пароль", http.StatusBadRequest)
-		return
-	}
+	if err := bcrypt.CompareHashAndPassword([]byte(dbHashPassword), []byte(admin.HashPassword)); err != nil {
+        t, _ := template.ParseFiles("front/pages/authorization/admin_authorization.html")
+        t.Execute(w, map[string]string{"error": "Неверная почта или пароль"})
+        return
+    }
 
 	token := jwt.New(jwt.SigningMethodHS256)
 	claimes := token.Claims.(jwt.MapClaims)

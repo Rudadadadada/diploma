@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заказ отменён | Курьерская служба</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --dark: #292F36;
+            --light: #F7FFF7;
+            --warning: #FFE66D;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background-image: radial-gradient(circle at 10% 20%, rgba(255, 107, 107, 0.1) 0%, rgba(78, 205, 196, 0.1) 90%);
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out;
+            transform-style: preserve-3d;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        
+        .icon-container {
+            width: 100px;
+            height: 100px;
+            background-color: rgba(255, 107, 107, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            position: relative;
+            transition: transform 0.3s;
+        }
+        
+        .icon-container:hover {
+            transform: scale(1.1) rotate(10deg);
+        }
+        
+        .icon-container i {
+            font-size: 50px;
+            color: var(--primary);
+        }
+        
+        h1 {
+            color: var(--dark);
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 28px;
+            line-height: 1.4;
+        }
+        
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%, -50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        .illustration {
+            margin: 30px 0;
+            opacity: 0.8;
+        }
+        
+        .emoji {
+            font-size: 24px;
+            vertical-align: middle;
+            margin: 0 5px;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(1, 1) translate(-50%, -50%);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(30, 30) translate(-50%, -50%);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.9;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container pulse">
+        <div class="icon-container">
+            <i class="fas fa-times-circle"></i>
+        </div>
+        <h1>Клиент отменил заказ <span class="emoji">😕</span></h1>
+        <p>Не расстраивайтесь! У нас есть много других заказов, которые ждут своего курьера. Выберите новый заказ из списка доступных.</p>
+        
+        <div class="illustration">
+            <i class="fas fa-utensils" style="font-size: 40px; color: #4ECDC4;"></i>
+            <i class="fas fa-shopping-bag" style="font-size: 40px; color: #FF6B6B; margin: 0 20px;"></i>
+            <i class="fas fa-biking" style="font-size: 40px; color: #292F36;"></i>
+        </div>
+        
+        <form action="/courier/view_orders" target="_self">
+            <button type="submit" class="btn">
+                <i class="fas fa-list-ul" style="margin-right: 8px;"></i> Посмотреть доступные заказы
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.container');
+            
+            setTimeout(() => {
+                container.classList.remove('pulse');
+            }, 1500);
+            
+            const btn = document.querySelector('.btn');
+            btn.addEventListener('click', function() {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> Загружаем заказы...';
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-check" style="margin-right: 8px;"></i> Готово!';
+                }, 1500);
+            });
+        });
+    </script>
+</body>
+</html>

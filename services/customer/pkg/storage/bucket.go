@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func InertIntoBucket(customerId int, items map[int]int) error {
+func InsertIntoBucket(customerId int, items map[int]int) error {
 	_, err := db.Query(
 		`insert into bucket (customer_id, preparing)
 		select * from (select cast($1 as integer), true) as tmp

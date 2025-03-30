@@ -2,73 +2,261 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="/static/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация курьера</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        form {
-            width: 300px;
-            margin: 0 auto;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 5px;
+        :root {
+            --primary-color: #4361ee;
+            --primary-dark: #3a56d4;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --danger-color: #e63946;
+            --success-color: #2a9d8f;
+            --border-radius: 10px;
+            --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
         }
 
-        input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
-            margin-bottom: 15px;
         }
 
-        input[type="email"] {
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0f5ff 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .registration-container {
             width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            box-sizing: border-box;
-            margin-bottom: 15px;
+            max-width: 420px;
+            padding: 2rem;
         }
 
-        input[type="password"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            box-sizing: border-box;
-            margin-bottom: 15px;
-        }
-
-        .form-container {
+        .registration-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2.5rem;
             text-align: center;
+            transform: translateY(0);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .registration-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .registration-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #4361ee, #4cc9f0);
+        }
+
+        .registration-header {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .footer-links {
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        .footer-links a {
+            color: #666;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .registration-header h2 {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .registration-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+            position: relative;
+        }
+
+        .registration-icon {
+            background-color: var(--primary-color);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+            background-color: #f8f9fa;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            background-color: white;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            width: 100%;
+            transition: var(--transition);
+            box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: #e63946;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="form-container">
-    <h2>Регистрация курьера</h2>
-    <form action="/registration/courier" method="post">
-        <label for="first-name">Имя:</label>
-        <input type="text" id="first-name" name="first-name" required>
+    <div class="registration-container">
+        <div class="registration-card">
+            <div class="registration-icon">
+                <i class="fas fa-truck"></i>
+            </div>
+            <div class="registration-header">
+                <h2>Регистрация курьера</h2>
+                <p>Введите данные для регистрации</p>
+            </div>
+            
+            <div class="error-message">
+                {{ if .error }}
+                {{ .error }}
+                {{ end }}
+            </div>
 
-        <label for="last-name">Фамилия:</label>
-        <input type="text" id="last-name" name="last-name" required>
+            <form action="/registration/courier" method="post">
+                <div class="form-group">
+                    <label for="first-name">Имя:</label>
+                    <input type="text" id="first-name" name="first-name" class="form-control" required>
+                </div>
+    
+                <div class="form-group">
+                    <label for="last-name">Фамилия:</label>
+                    <input type="text" id="last-name" name="last-name" class="form-control" required>
+                </div>
+    
+                <div class="form-group">
+                    <label for="email">Электронная почта:</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+    
+                <div class="form-group">
+                    <label for="password">Пароль:</label>
+                    <input type="password" id="password" name="password" class="form-control" required>
+                </div>
+    
+                <button type="submit" class="btn">Зарегистрироваться</button>
 
-        <label for="email">Электронная почта:</label>
-        <input type="email" id="email" name="email" required>
-
-        <label for="password">Пароль:</label>
-        <input type="password" id="password" name="password" required>
-
-        <button style="width: 100%;" type="submit">Зарегистрироваться</button>
-    </form>
-    <form action="/authorization/courier" method="get">
-        <button style="width: 100%;">Авторизоваться</button>
-    </form>
-</div>
+                <div class="footer-links">
+                    <a href="/authorization/courier">
+                        <i class="fas fa-sign-in-alt"></i> Авторизоваться
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 
 </body>
 </html>

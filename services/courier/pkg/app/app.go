@@ -41,7 +41,11 @@ func serverLaunch() {
 	router.With(handlers.JWTMiddleware).Get("/courier/view_orders/view_order_items", handlers.ViewOrderItemsPage)
 	router.With(handlers.JWTMiddleware).Get("/courier/take_order", handlers.TakeOrder)
 	router.With(handlers.JWTMiddleware).Get("/courier/in_progress", handlers.InProgressPage)
-	router.With(handlers.JWTMiddleware).Get("/courier/take_order_from_shop", handlers.TakeOrderFromShop)
+
+	router.With(handlers.JWTMiddleware).Get("/order/get_status", handlers.GetOrderStatus)
+	router.With(handlers.JWTMiddleware).Get("/order/declined", handlers.DeclinedPage)
+	router.With(handlers.JWTMiddleware).Get("/order/not_yet", handlers.NotYetPage)
+	router.With(handlers.JWTMiddleware).Post("/courier/take_order_from_shop", handlers.TakeOrderFromShop)
 
 	fmt.Println("Courier server is running on port 8083")
 	if err := http.ListenAndServe(":8083", router); err != nil {

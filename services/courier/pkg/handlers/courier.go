@@ -172,7 +172,11 @@ func CheckCourierInProgress(w http.ResponseWriter, r *http.Request, cameFrom *st
 
 	var path string
 	if courier.InProgress {
-		if cameFrom != nil && (*cameFrom == "in progress" || *cameFrom == "take order from shop"){
+		if cameFrom != nil && (*cameFrom == "in progress" || 
+			*cameFrom == "take order from shop" || 
+			*cameFrom == "get order status" || 
+			*cameFrom == "not yet" ||
+			*cameFrom == "declined") {
 			return nil, err
 		}
 
@@ -180,7 +184,11 @@ func CheckCourierInProgress(w http.ResponseWriter, r *http.Request, cameFrom *st
 		return &path, nil
 
 	} else {
-		if cameFrom != nil && (*cameFrom == "in progress" || *cameFrom == "take order from shop") {
+		if cameFrom != nil && (*cameFrom == "in progress" || 
+			*cameFrom == "take order from shop" || 
+			*cameFrom == "get order status" || 
+			*cameFrom == "not yet" ||
+			*cameFrom == "declined") {
 			path = "http://localhost:8083/courier"
 			return &path, nil
 		}
@@ -275,6 +283,40 @@ func TakeOrder(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "http://localhost:8083/courier/in_progress", http.StatusSeeOther)
 }
 
+func GetOrderStatus(w http.ResponseWriter, r *http.Request) {
+	cameFrom := "get order status"
+
+	path, err := CheckCourierInProgress(w, r, &cameFrom)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if path != nil {
+		http.Redirect(w, r, *path, http.StatusSeeOther)
+		return
+	}
+
+	orderId, err := strconv.Atoi(r.FormValue("order_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	status, err := storage.GetOrderStatus(orderId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	response := map[string]string{
+		"status": status,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
 func TakeOrderFromShop(w http.ResponseWriter, r *http.Request) {
 	cameFrom := "take order from shop"
 
@@ -314,6 +356,6 @@ func TakeOrderFromShop(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	} else {
-		
+
 	}
 }

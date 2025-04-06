@@ -14,7 +14,7 @@ func ViewAllProducts() ([]models.Product, []string, error) {
 			categories.name 
 		from products as products 
 		left join 
-		categories as categories on products.category_id = categories.id`)
+		categories as categories on products.category_id = categories.id order by products.id`)
 
 	if err != nil {
 		return nil, nil, err

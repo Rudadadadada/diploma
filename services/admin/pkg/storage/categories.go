@@ -5,7 +5,7 @@ import (
 )
 
 func ViewAllCategories() ([]models.Category, error) {
-	rows, err := db.Query(`select * from categories`)
+	rows, err := db.Query(`select * from categories order by id`)
 
 	if err != nil {
 		return nil, err

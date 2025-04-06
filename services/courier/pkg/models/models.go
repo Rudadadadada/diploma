@@ -11,10 +11,12 @@ type BucketItem struct {
 }
 
 type Order struct {
-	Id         uint        `json:"id"`
-	TotalCost  float64     `json:"total_cost"`
-	CreatedAt  time.Time   `json:"created_at"`
-	OrderItems []OrderItem `json:"order_items"`
+	Id           uint        `json:"id"`
+	TotalCost    float64     `json:"total_cost"`
+	CreatedAt    time.Time   `json:"created_at"`
+	CreatedAtStr string      `json:"created_at_str"`
+	OrderItems   []OrderItem `json:"order_items"`
+	Status       string      `json:"status"`
 }
 
 type OrderItem struct {
@@ -24,11 +26,11 @@ type OrderItem struct {
 }
 
 type Courier struct {
-	Id              int `json:"id"`
-	Active          bool `json:"active"`
-	InProgress     bool `json:"in_progress"`
-	Rating          int  `json:"rating"`
-	Order_delivered int  `json:"order_delivered"`
+	Id              int     `json:"id"`
+	Active          bool    `json:"active"`
+	InProgress      bool    `json:"in_progress"`
+	Rating          float32 `json:"rating"`
+	OrderDelivered int     `json:"order_delivered"`
 }
 
 type OrderMessage struct {
@@ -41,4 +43,9 @@ type OrderMessage struct {
 	DeliveredAt       time.Time    `json:"delivered_at,omitempty"`
 	Courier           Courier      `json:"courier"`
 	OrderItems        []BucketItem `json:"bucket_items"`
+}
+
+type OrderStatus struct {
+	Id     int    `json:"id"`
+	Status string `json:"status"`
 }

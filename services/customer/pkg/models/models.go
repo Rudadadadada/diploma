@@ -29,17 +29,22 @@ type BucketItem struct {
 }
 
 type Order struct {
-	Id          uint       `json:"id"`
-	CustomerId  uint       `json:"customer_id"`
-	BucketId    uint       `json:"bucket_id"`
-	TotalCost   float32    `json:"total_cost"`
-	CreatedAt   time.Time  `json:"created_at"`
-	DeliveredAt *time.Time `json:"delivered_at,omitempty"`
-	Status      string     `json:"status"`
+	Id           uint       `json:"id"`
+	CustomerId   uint       `json:"customer_id"`
+	BucketId     uint       `json:"bucket_id"`
+	TotalCost    float32    `json:"total_cost"`
+	CreatedAt    time.Time  `json:"created_at"`
+	CreatedAtStr string     `json:"created_at_str"`
+	DeliveredAt  *time.Time `json:"delivered_at,omitempty"`
+	Status       string     `json:"status"`
 }
 
 type Courier struct {
-	Id uint `json:"id"`
+	Id             int     `json:"id"`
+	Active         bool    `json:"active"`
+	InProgress     bool    `json:"in_progress"`
+	Rating         float32 `json:"rating"`
+	OrderDelivered int     `json:"order_delivered"`
 }
 
 type OrderMessage struct {
@@ -55,6 +60,6 @@ type OrderMessage struct {
 }
 
 type OrderStatus struct {
-    Id     int    `json:"id"`
-    Status string `json:"status"`
+	Id     int    `json:"id"`
+	Status string `json:"status"`
 }

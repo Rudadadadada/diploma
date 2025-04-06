@@ -10,7 +10,7 @@ func AddCourier(courier models.Courier) error {
 		select * from (select cast($1 as integer), cast($2 as bool), cast($3 as bool), cast($4 as integer), cast($5 as integer)) as tmp
 		where not exists (
 			select 1 from couriers where id = cast($1 as integer)
-		)`, courier.Id, courier.Active, courier.In_progress, courier.Rating, courier.Order_delivered,
+		)`, courier.Id, courier.Active, courier.InProgress, courier.Rating, courier.OrderDelivered,
 	)
 
 	if err != nil {
@@ -20,11 +20,11 @@ func AddCourier(courier models.Courier) error {
 	return nil
 }
 
-func SetState(courierId int, state bool) error {
+func SetState(courierId int, courier models.Courier) error {
 	_, err := db.Query(
 		`update couriers
-		set active = $2
-		where id = $1`, courierId, state,
+		set active = $2, in_progress = $3
+		where id = $1`, courierId, courier.Active, courier.InProgress,
 	)
 
 	if err != nil {
@@ -58,7 +58,7 @@ func GetActiveCouriers() ([]models.Courier, error) {
 	var couriers []models.Courier
 	for rows.Next() {
 		var tmp models.Courier
-		err = rows.Scan(&tmp.Id, &tmp.Active, &tmp.In_progress, &tmp.Rating, &tmp.Order_delivered)
+		err = rows.Scan(&tmp.Id, &tmp.Active, &tmp.InProgress, &tmp.Rating, &tmp.OrderDelivered)
 		if err != nil {
 			return nil, err
 		}

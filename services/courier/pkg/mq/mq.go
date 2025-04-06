@@ -1,7 +1,6 @@
 package mq
 
 import (
-	// "diploma/services/courier/pkg/storage"
 	"diploma/services/courier/pkg/models"
 	"diploma/services/courier/pkg/storage"
 	"encoding/json"
@@ -49,8 +48,6 @@ func HandleMessages() {
 
 func ProduceMessage(msg models.OrderMessage, key string) error {
 	topic := "courier"
-
-	log.Print(msg)
 
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
@@ -109,9 +106,20 @@ func ParseMessageAndProduce(msg *kafka.Message) error {
 		}
 	case "Order collected":
 		time.Sleep(5 * time.Second)
+		status, err := storage.GetOrderStatus(orderMessage.OrderId)
+		if err != nil {
+			return err
+		}
+		if status == "order declined" {
+			return nil
+		}
 		err = storage.UpdateOrderStatus(orderMessage.OrderId, "order collected")
 		if err != nil {
-			log.Print(err)
+			return err
+		}
+	case "Order declined by distribution":
+		err := storage.DeclineOrder(orderMessage.OrderId)
+		if err != nil {
 			return err
 		}
 	}

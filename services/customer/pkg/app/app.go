@@ -38,6 +38,7 @@ func serverLaunch() {
 	router.With(handlers.JWTMiddleware).Get("/customer", handlers.CustomerPage)
 	router.With(handlers.JWTMiddleware).Get("/customer/logout", handlers.Logout)
 	router.With(handlers.JWTMiddleware).Post("/customer/make_order", handlers.MakeOrder)
+	router.With(handlers.JWTMiddleware).Post("/customer/decline_order", handlers.DeclineOrder)
 	router.With(handlers.JWTMiddleware).Get("/customer/view_orders", handlers.ViewOrdersPage)
 	router.With(handlers.JWTMiddleware).Get("/customer/view_orders/view_order_items", handlers.ViewOrderItems)
 

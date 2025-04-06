@@ -2,6 +2,7 @@ package storage
 
 import (
 	"diploma/services/courier/pkg/models"
+	"diploma/services/courier/pkg/utils"
 	"time"
 )
 
@@ -47,8 +48,9 @@ func ViewOrders() ([]models.Order, error) {
 		`select
 			id,
 			total_cost,
-			created_at
-		from orders where took = false`,
+			created_at,
+			status
+		from orders where took = false and status != 'delivered' and status != 'order declined'`,
 	)
 
 	if err != nil {
@@ -58,10 +60,12 @@ func ViewOrders() ([]models.Order, error) {
 	var orders []models.Order
 	for rows.Next() {
 		var tmp models.Order
-		err = rows.Scan(&tmp.Id, &tmp.TotalCost, &tmp.CreatedAt)
+		err = rows.Scan(&tmp.Id, &tmp.TotalCost, &tmp.CreatedAt, &tmp.Status)
 		if err != nil {
 			return nil, err
 		}
+
+		tmp.CreatedAtStr = utils.TruncateTime(tmp.CreatedAt)
 
 		orders = append(orders, tmp)
 	}
@@ -136,9 +140,9 @@ func TakeOrder(orderId int, courierId int) error {
 
 func GetOrderId(courierId int) (int, error) {
 	rows, err := db.Query(`
-	 select
-	  id
-	 from orders where courier_id = $1`, courierId,
+		select
+			id
+		from orders where courier_id = $1`, courierId,
 	)
 
 	if err != nil {
@@ -242,7 +246,7 @@ func UpdateOrderStatus(orderId int, status string) error {
 		set status = $2
 		where id = $1`, orderId, status,
 	)
-	
+
 	if err != nil {
 		return err
 	}
@@ -268,6 +272,15 @@ func GetOrderStatus(orderId int) (string, error) {
 		return "", err
 	}
 
-
 	return status, nil
+}
+
+func DeclineOrder(orderId int) error {
+	_, err := db.Query(`update orders set status = 'order declined', courier_id = -1 where id = $1`, orderId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -47,7 +47,6 @@ func HandleMessages() {
 func ProduceMessage(msg models.OrderMessage, key string) error {
 	topic := "customer"
 
-	log.Print(msg)
 	jsonMsg, err := json.Marshal(msg)
 	if err != nil {
 		return err
@@ -89,7 +88,7 @@ func ParseMessage(msg *kafka.Message) error {
 		if err != nil {
 			return err
 		}
-	case "Waiting for courier", "No couriers", "Order distributed":
+	case "Waiting for courier", "No couriers", "Order distributed", "Order taken from shop", "Order delivered", "Declined by courier":
 		storage.UpdateStatus(orderMessage.OrderId, orderMessage.Status)
 	case "Order collected":
 		ptrChanged, err := storage.GetChangesAndUpdate(orderMessage.OrderItems, orderMessage.OrderId, int(orderMessage.TotalCost))

@@ -2,6 +2,8 @@ package storage
 
 import (
 	"diploma/services/customer/pkg/models"
+	"diploma/services/customer/pkg/utils"
+	"log"
 	"time"
 )
 
@@ -104,6 +106,9 @@ func ViewOrders(customerId int) ([]models.Order, error) {
 			return nil, err
 		}
 
+		tmp.CreatedAtStr = utils.TruncateTime(tmp.CreatedAt)
+		tmp.Status = utils.TranslateStatusToRussian(tmp.Status)
+
 		orders = append(orders, tmp)
 	}
 
@@ -151,7 +156,30 @@ func ViewOrderItems(bucketId int) ([]models.BucketItem, error) {
 }
 
 func UpdateStatus(orderId int, status string) error {
-	_, err := db.Query(
+	rows, err := db.Query(`select status from orders where id = $1`, orderId)
+
+	if err != nil {
+		return err
+	}
+
+	var statusDb string 
+	for rows.Next() {
+		err = rows.Scan(&statusDb)
+		if err != nil {
+			log.Print(err)
+			return err
+		}
+	}
+
+	if err = rows.Close(); err != nil {
+		return err
+	}
+
+	if statusDb == "order declined" || statusDb == "declined by courier" {
+		return nil
+	}
+
+	_, err = db.Query(
 		`update orders
 		set status = $2
 		where id = $1`, orderId, status,
@@ -177,6 +205,9 @@ func GetOrderStatuses(customerId int) ([]models.OrderStatus, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		tmp.Status = utils.TranslateStatusToRussian(tmp.Status)
+
 		statuses = append(statuses, tmp)
 	}
 

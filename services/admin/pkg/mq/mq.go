@@ -148,6 +148,41 @@ func ParseMessageAndProduce(msg *kafka.Message) error {
 		}
 
 		ProduceMessage(orderMessage, "Order collected")
+	case "Order declined", "Declined by courier":
+		actualProductsState, err := storage.GetActualState(orderMessage.OrderItems)
+		if err != nil {
+			return err
+		}
+
+		var toUpdate []models.Product
+		for i := 0; i < len(actualProductsState); i++ {
+			id := actualProductsState[i].Id
+
+			amount := int(orderMessage.OrderItems[i].Amount)
+			actualAmount := int(actualProductsState[i].Amount)
+
+			var tmp models.Product
+			tmp.Id = id
+
+			tmp.Amount = uint(actualAmount + amount)
+
+			toUpdate = append(toUpdate, tmp)
+		}
+
+		err = storage.UpadteProducts(toUpdate)
+		if err != nil {
+			return err
+		}
+
+		syncDatabasesMessage, err := storage.SyncDatabases()
+		if err != nil {
+			return err
+		}
+
+		err = ProduceSyncMessage(*syncDatabasesMessage)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

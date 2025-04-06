@@ -172,11 +172,12 @@ func CheckCourierInProgress(w http.ResponseWriter, r *http.Request, cameFrom *st
 
 	var path string
 	if courier.InProgress {
-		if cameFrom != nil && (*cameFrom == "in progress" || 
-			*cameFrom == "take order from shop" || 
-			*cameFrom == "get order status" || 
+		if cameFrom != nil && (*cameFrom == "in progress" ||
+			*cameFrom == "take order from shop" ||
+			*cameFrom == "get order status" ||
 			*cameFrom == "not yet" ||
-			*cameFrom == "declined") {
+			*cameFrom == "declined" ||
+			*cameFrom == "finish delivery") {
 			return nil, err
 		}
 
@@ -184,11 +185,12 @@ func CheckCourierInProgress(w http.ResponseWriter, r *http.Request, cameFrom *st
 		return &path, nil
 
 	} else {
-		if cameFrom != nil && (*cameFrom == "in progress" || 
-			*cameFrom == "take order from shop" || 
-			*cameFrom == "get order status" || 
+		if cameFrom != nil && (*cameFrom == "in progress" ||
+			*cameFrom == "take order from shop" ||
+			*cameFrom == "get order status" ||
 			*cameFrom == "not yet" ||
-			*cameFrom == "declined") {
+			*cameFrom == "declined" ||
+			*cameFrom == "finish delivery") {
 			path = "http://localhost:8083/courier"
 			return &path, nil
 		}
@@ -214,6 +216,17 @@ func TakeOrder(w http.ResponseWriter, r *http.Request) {
 
 	if id == 0 {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	status, err := storage.GetOrderStatus(orderId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if status == "order declined" {
+		http.Redirect(w, r, "http://localhost:8083/order/declined", http.StatusSeeOther)
 		return
 	}
 
@@ -256,7 +269,7 @@ func TakeOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var tookOrderMessage models.OrderMessage
-	if ptr != nil {
+	if ptrOrderMessage != nil {
 		tookOrderMessage = *ptrOrderMessage
 	}
 
@@ -356,6 +369,174 @@ func TakeOrderFromShop(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	} else {
+		err = storage.UpdateOrderStatus(orderId, "order taken from shop")
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			log.Fatalf("StartPage: %s", err.Error())
+		}
 
+		ptrOrderMessage, err := storage.GetFullOrderInfo(orderId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		var tookOrderMessage models.OrderMessage
+		if ptrOrderMessage != nil {
+			tookOrderMessage = *ptrOrderMessage
+		}
+
+		err = mq.ProduceMessage(tookOrderMessage, "Order taken from shop")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+}
+
+func FinishDelivery(w http.ResponseWriter, r *http.Request) {
+	cameFrom := "finish delivery"
+
+	path, err := CheckCourierInProgress(w, r, &cameFrom)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if path != nil {
+		http.Redirect(w, r, *path, http.StatusSeeOther)
+		return
+	}
+
+	orderId, err := strconv.Atoi(r.FormValue("order_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	status, err := storage.GetOrderStatus(orderId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if status != "order taken from shop" {
+		tmpl, err := template.ParseFiles("front/pages/courier/not_yet.html")
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			log.Fatalf("StartPage: %s", err.Error())
+		}
+		err = tmpl.Execute(w, nil)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			log.Fatalf("StartPage: %s", err.Error())
+		}
+		return
+	} else {
+		err = storage.UpdateOrderStatus(orderId, "delivered")
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			log.Fatalf("StartPage: %s", err.Error())
+		}
+
+		ptrOrderMessage, err := storage.GetFullOrderInfo(orderId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		var deliveredOrderMessage models.OrderMessage
+		if ptrOrderMessage != nil {
+			deliveredOrderMessage = *ptrOrderMessage
+		}
+
+		courierId := GetCourierId(w, r)
+		ptrCourier, err := storage.GetState(courierId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		var courier models.Courier
+		if ptrCourier != nil {
+			courier = *ptrCourier
+		}
+
+		deliveredAt := time.Now()
+		deliveredOrderMessage.DeliveredAt = deliveredAt
+		deliveredOrderMessage.Courier = courier
+
+		err = mq.ProduceMessage(deliveredOrderMessage, "Delivered")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		err = storage.FinishDelivery(courierId, orderId, deliveredAt)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		http.Redirect(w, r, "http://localhost:8083/courier/delivery_finished", http.StatusSeeOther)
+	}
+}
+
+func Declined(w http.ResponseWriter, r *http.Request) {
+	courierId := GetCourierId(w, r)
+	err := storage.DisableInProgress(courierId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+}
+
+func Decline(w http.ResponseWriter, r *http.Request) {
+	orderId, err := strconv.Atoi(r.FormValue("order_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = storage.DeclineOrder(orderId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	declinedByCourierMessage, err := storage.GetFullOrderInfo(orderId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	
+	err = mq.ProduceMessage(*declinedByCourierMessage, "Declined by courier")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	tmpl, err := template.ParseFiles("front/pages/courier/decline.html")
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		log.Fatalf("StartPage: %s", err.Error())
+	}
+	err = tmpl.Execute(w, nil)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		log.Fatalf("StartPage: %s", err.Error())
+	}
+
+	courierId := GetCourierId(w, r)
+	err = storage.DisableInProgress(courierId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = storage.DeclinedByCourier(courierId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 }

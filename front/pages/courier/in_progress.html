@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,14 +21,14 @@
             --border-radius: 12px;
             --transition: all 0.3s ease;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
             background: linear-gradient(135deg, #e0e7ff 0%, #f0f5ff 100%);
             color: var(--dark-text);
@@ -36,7 +37,7 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-        
+
         .container {
             background-color: white;
             border-radius: var(--border-radius);
@@ -45,7 +46,7 @@
             margin-top: 20px;
             transition: var(--transition);
         }
-        
+
         h1 {
             color: var(--secondary-color);
             margin-bottom: 20px;
@@ -54,18 +55,18 @@
             align-items: center;
             gap: 10px;
         }
-        
+
         h1 i {
             color: var(--accent-color);
         }
-        
+
         .order-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-        
+
         .order-summary {
             background-color: var(--light-bg);
             padding: 15px;
@@ -73,7 +74,7 @@
             font-weight: bold;
             display: inline-block;
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -82,13 +83,14 @@
             border-radius: var(--border-radius);
             overflow: hidden;
         }
-        
-        th, td {
+
+        th,
+        td {
             padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #eee;
         }
-        
+
         th {
             background-color: var(--primary-color);
             color: var(--light-text);
@@ -96,15 +98,15 @@
             text-transform: uppercase;
             font-size: 14px;
         }
-        
+
         tr:hover {
             background-color: rgba(79, 195, 247, 0.1);
         }
-        
+
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-        
+
         .status-container {
             margin: 25px 0;
             padding: 20px;
@@ -115,54 +117,61 @@
             animation: fadeIn 0.5s ease;
             box-shadow: var(--shadow);
         }
-        
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
+
         #notPrepared {
             background-color: rgba(255, 152, 0, 0.1);
             border-left: 4px solid var(--warning-color);
         }
-        
+
         #prepared {
             background-color: rgba(76, 175, 80, 0.1);
             border-left: 4px solid var(--success-color);
         }
-        
+
         #takenFromShop {
             background-color: rgba(79, 195, 247, 0.1);
             border-left: 4px solid var(--accent-color);
         }
-        
+
         .status-icon {
             font-size: 24px;
         }
-        
+
         #notPrepared .status-icon {
             color: var(--warning-color);
         }
-        
+
         #prepared .status-icon {
             color: var(--success-color);
         }
-        
+
         #takenFromShop .status-icon {
             color: var(--accent-color);
         }
-        
+
         .status-text {
             flex: 1;
         }
-        
+
         .buttons-container {
             display: flex;
             gap: 15px;
             margin-top: 30px;
             flex-wrap: wrap;
         }
-        
+
         button {
             padding: 12px 24px;
             border: none;
@@ -175,66 +184,75 @@
             gap: 8px;
             font-size: 16px;
         }
-        
+
         #takeOrderButton button {
             background-color: var(--success-color);
             color: white;
         }
-        
+
         #takeOrderButton button:hover {
             background-color: #3d8b40;
             transform: translateY(-2px);
         }
-        
+
         #completeDeliveryButton button {
             background-color: var(--primary-color);
             color: white;
         }
-        
+
         #completeDeliveryButton button:hover {
             background-color: var(--secondary-color);
             transform: translateY(-2px);
         }
-        
+
         #declineButton button {
             background-color: var(--danger-color);
             color: white;
         }
-        
+
         #declineButton button:hover {
             background-color: #d32f2f;
             transform: translateY(-2px);
         }
-        
+
         .pulse {
             animation: pulse 1.5s infinite;
         }
-        
+
         @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
-        
+
         .hidden {
             display: none !important;
         }
-        
+
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
             }
-            
+
             .buttons-container {
                 flex-direction: column;
             }
-            
+
             button {
                 width: 100%;
             }
         }
     </style>
 </head>
+
 <body data-order-id="{{.OrderId}}">
     <div class="container">
         <div class="order-header">
@@ -246,7 +264,7 @@
                 <i class="fas fa-receipt"></i> Итого: {{.AllProductsCost}}
             </div>
         </div>
-        
+
         <table>
             <thead>
                 <tr>
@@ -263,7 +281,7 @@
                 {{end}}
             </tbody>
         </table>
-        
+
         <div id="notPrepared" class="status-container hidden">
             <i class="status-icon fas fa-hourglass-half"></i>
             <div class="status-text">
@@ -271,7 +289,7 @@
                 <p>Пожалуйста, подождите пока сотрудники соберут ваш заказ. Страница обновится автоматически.</p>
             </div>
         </div>
-        
+
         <div id="prepared" class="status-container hidden">
             <i class="status-icon fas fa-box"></i>
             <div class="status-text">
@@ -279,7 +297,7 @@
                 <p>Вы можете забрать заказ в магазине.</p>
             </div>
         </div>
-        
+
         <div id="takenFromShop" class="status-container hidden">
             <i class="status-icon fas fa-truck"></i>
             <div class="status-text">
@@ -287,23 +305,23 @@
                 <p>Вы доставляете заказ клиенту. По завершении доставки нажмите соответствующую кнопку.</p>
             </div>
         </div>
-        
+
         <div class="buttons-container">
-            <form id="takeOrderButton" action="#" target="_self" class="hidden">
+            <form id="takeOrderButton" target="_self" class="hidden">
                 <button type="button">
                     <i class="fas fa-box"></i>
                     Забрать заказ
                 </button>
             </form>
-            
-            <form id="completeDeliveryButton" action="#" target="_self" class="hidden">
+
+            <form id="completeDeliveryButton" target="_self" class="hidden">
                 <button type="button">
                     <i class="fas fa-check-circle"></i>
                     Завершить доставку
                 </button>
             </form>
-            
-            <form id="declineButton" action="/courier/decline" target="_self">
+
+            <form id="declineButton" target="_self">
                 <button type="submit">
                     <i class="fas fa-times-circle"></i>
                     Отменить заказ
@@ -313,16 +331,16 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const takeOrderButton = document.querySelector('#takeOrderButton');
             const completeDeliveryButton = document.querySelector('#completeDeliveryButton');
             const declineButton = document.querySelector('#declineButton');
             const notPrepared = document.querySelector("#notPrepared");
             const prepared = document.querySelector("#prepared");
             const takenFromShop = document.querySelector("#takenFromShop");
-            
+
             const orderId = parseInt(document.body.dataset.orderId, 10);
-                
+
             function getOrderStatus() {
                 const queryParams = new URLSearchParams({
                     order_id: orderId,
@@ -333,7 +351,7 @@
                     .then(data => {
                         const status = data.status;
 
-                        if (status === 'declined') {
+                        if (status === 'order declined') {
                             window.location.href = '/order/declined';
                         } else if (status === 'order collected') {
                             notPrepared.classList.add('hidden');
@@ -356,16 +374,16 @@
                         }
                     })
                     .catch(error => console.error('Ошибка при получении статуса:', error));
-                
+
                 // Повторно проверяем статус каждые 10 секунд
                 setTimeout(getOrderStatus, 10000);
             }
-            
+
             // Инициализация и запуск проверки статуса
             getOrderStatus();
-            
+
             // Обработчики кнопок
-            takeOrderButton.addEventListener('submit', function(e) {
+            takeOrderButton.addEventListener('click', function (e) {
                 e.preventDefault();
                 fetch(`/courier/take_order_from_shop?order_id=${orderId}`)
                     .then(response => {
@@ -376,20 +394,41 @@
                         }
                     });
             });
-            
-            completeDeliveryButton.addEventListener('submit', function(e) {
+
+            completeDeliveryButton.addEventListener('click', function (e) {
                 e.preventDefault();
-                fetch(`/courier/complete_delivery?order_id=${orderId}`)
+                fetch(`/courier/finish_delivery?order_id=${orderId}`)
                     .then(response => {
                         if (response.ok) {
-                            alert('Доставка успешно завершена!');
-                            window.location.href = '/courier/dashboard';
+                            window.location.href = '/courier/delivery_finished';
                         } else {
                             alert('Произошла ошибка при попытке завершить доставку');
                         }
                     });
             });
+
+            declineButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                fetch(`/courier/decline?order_id=${orderId}`)
+                    .then(response => {
+                        if (response.ok) {
+                            return response.text(); // Получаем содержимое ответа
+                        } else {
+                            throw new Error('Ошибка при отклонении заказа');
+                        }
+                    })
+                    .then(html => {
+                        // Устанавливаем содержимое страницы
+                        document.open();
+                        document.write(html);
+                        document.close();
+                    })
+                    .catch(error => {
+                        console.error('Ошибка:', error);
+                    });
+            });
         });
     </script>
 </body>
+
 </html>

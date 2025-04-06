@@ -29,11 +29,11 @@ type BucketItem struct {
 }
 
 type Courier struct {
-	Id              int  `json:"id"`
-	Active          bool `json:"active"`
-	In_progress     bool `json:"in_progress"`
-	Rating          int  `json:"rating"`
-	Order_delivered int  `json:"order_delivered"`
+	Id              int     `json:"id"`
+	Active          bool    `json:"active"`
+	InProgress      bool    `json:"in_progress"`
+	Rating          float32 `json:"rating"`
+	OrderDelivered int     `json:"order_delivered"`
 }
 
 type OrderMessage struct {

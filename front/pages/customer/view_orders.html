@@ -3,7 +3,6 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мои заказы</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -156,6 +155,30 @@
             box-shadow: 0 6px 12px rgba(67, 97, 238, 0.2);
         }
 
+        .btn-cancel {
+            background-color: rgba(247, 37, 133, 0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            opacity: 0.2;
+            transition: var(--transition);
+        }
+
+        .btn-cancel.active {
+            background-color: #d32f2f;
+            opacity: 1;
+            cursor: pointer;
+        }
+
+        .btn-cancel.active:hover {
+            background-color: #d32f2f;
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+
+
         .btn-back {
             background-color: white;
             color: var(--primary-color);
@@ -212,31 +235,36 @@
 
 <body>
     <div class="container">
-        <h1><i class="fas fa-clipboard-list"></i> Мои заказы</h1>
+        <h1><i class="fas fa-list"></i> Мои заказы</h1>
 
         {{if .}}
         <table class="orders-table">
             <thead>
                 <tr>
                     <th><i class="fas fa-hashtag"></i> Номер</th>
-                    <th><i class="far fa-calendar-alt"></i> Время создания</th>
+                    <th><i class="fas fa-calendar-alt"></i> Время создания</th>
                     <th><i class="fas fa-info-circle"></i> Статус</th>
-                    <th><i class="fas fa-ruble-sign"></i> Стоимость</th>
-                    <th><i class="fas fa-eye"></i> Действия</th>
+                    <th><i class="fas fa-money-bill-wave"></i> Стоимость</th>
+                    <th><i class="fas fa-tasks"></i> Действия</th>
                 </tr>
             </thead>
-            <tbody id="orders-tbody">
+            <tbody>
                 {{range .}}
                 <tr data-order-id="{{.Id}}">
                     <td>#{{.Id}}</td>
-                    <td>{{.CreatedAt}}</td>
+                    <td>{{.CreatedAtStr}}</td>
                     <td><span class="order-status">{{.Status}}</span></td>
                     <td>{{.TotalCost}} ₽</td>
                     <td>
-                        <button type="button" class="btn btn-view view-order-items-button" data-order-id="{{.Id}}"
-                            data-bucket-id="{{.BucketId}}">
-                            <i></i> Подробнее
-                        </button>
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" class="btn btn-view btn-small view-order-items-button"
+                                data-order-id="{{.Id}}" data-bucket-id="{{.BucketId}}">
+                                <i class="fas fa-eye"></i> Подробнее
+                            </button>
+                            <button class="btn btn-cancel btn-small" data-order-id="{{.Id}}" data-bucket-id="{{.BucketId}}">
+                                <i class="fas fa-times"></i> Отменить
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {{end}}
@@ -259,6 +287,15 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const cancellableStatuses = [
+                "Заказ создан",
+                "Ищем свободного курьера",
+                "Заказ собран и ожидает курьера",
+                "Заказ собирают",
+                "Курьер забрал заказ и направляется к вам",
+                "Заказ собран с некоторыми изменениями"
+            ];
+
             function updateOrderStatuses() {
                 fetch('/order/get_statuses')
                     .then(response => response.json())
@@ -271,12 +308,22 @@
                                 if (statusElement) {
                                     statusElement.textContent = order.status;
                                 }
+
+                                const cancelButton = orderRow.querySelector('.btn-cancel');
+                                if (cancellableStatuses.includes(order.status)) {
+                                    cancelButton.classList.add('active');
+                                    cancelButton.disabled = false;
+                                } else {
+                                    cancelButton.classList.remove('active');
+                                    cancelButton.disabled = true;
+                                    cancelButton.style.opacity = "0.5"; // Прозрачность
+                                }
                             }
                         });
                     })
                     .catch(error => console.error('Ошибка при получении статусов:', error));
 
-                setTimeout(updateOrderStatuses, 10000);
+                setTimeout(updateOrderStatuses, 5000);
             }
 
             updateOrderStatuses();
@@ -300,15 +347,30 @@
                 });
             });
 
-            document.querySelectorAll('.status').forEach(statusElement => {
-                const status = statusElement.textContent.toLowerCase();
-                if (status.includes('доставлен') || status.includes('завершен')) {
-                    statusElement.classList.add('status-delivered');
-                } else if (status.includes('отмен')) {
-                    statusElement.classList.add('status-cancelled');
-                } else {
-                    statusElement.classList.add('status-processing');
-                }
+            document.querySelectorAll('.btn-cancel').forEach(button => {
+                button.addEventListener('click', function () {
+                    if (!this.classList.contains('active')) return;
+
+                    const orderId = parseInt(this.dataset.orderId, 10);
+                    const bucketId = parseInt(this.dataset.bucketId, 10);
+
+                    const queryParams = new URLSearchParams({
+                        order_id: orderId,
+                        bucket_id: bucketId
+                    });
+
+                    fetch(`/customer/decline_order?${queryParams.toString()}`, {
+                        method: 'POST'
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                alert('Заказ успешно отменен.');
+                                window.location.reload();
+                            } else {
+                                alert('Произошла ошибка при попытке отменить заказ');
+                            }
+                        });
+                });
             });
         });
     </script>

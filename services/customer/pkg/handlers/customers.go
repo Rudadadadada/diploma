@@ -160,12 +160,12 @@ func MakeOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	madeOrderMessage := models.OrderMessage{
-		OrderId:     orderId,
-		CustomerId:  customerId,
-		TotalCost:   float32(allProductCost),
-		Status:      "created",
-		CreatedAt:   created_at,
-		OrderItems:  orderItems,
+		OrderId:    orderId,
+		CustomerId: customerId,
+		TotalCost:  float32(allProductCost),
+		Status:     "created",
+		CreatedAt:  created_at,
+		OrderItems: orderItems,
 	}
 
 	err = mq.ProduceMessage(madeOrderMessage, "Made order")
@@ -228,4 +228,44 @@ func GetOrderStatuses(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func DeclineOrder(w http.ResponseWriter, r *http.Request) {
+	orderId, err := strconv.Atoi(r.FormValue("order_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	customerId := GetCustomerId(w, r)
+	err = storage.UpdateStatus(orderId, "order declined")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	bucketId, err := strconv.Atoi(r.FormValue("bucket_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	orderItems, err := storage.ViewOrderItems(bucketId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	declinedOrderMessage := models.OrderMessage{
+		OrderId:    orderId,
+		CustomerId: customerId,
+		Status:     "order declined",
+		OrderItems: orderItems,
+	}
+
+	err = mq.ProduceMessage(declinedOrderMessage, "Order declined")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 }

@@ -82,7 +82,7 @@ func ParseMessageAndProduce(msg *kafka.Message) error {
 		}
 
 		storage.AddCourier(courierMessage)
-		storage.SetState(courierMessage.Id, courierMessage.Active)
+		storage.SetState(courierMessage.Id, courierMessage)
 	} else {
 		err := json.Unmarshal(msg.Value, &orderMessage)
 		if err != nil {
@@ -106,6 +106,10 @@ func ParseMessageAndProduce(msg *kafka.Message) error {
 		case "Order taken":
 			storage.SetInProgress(orderMessage.Courier.Id)
 			ProduceMessage(orderMessage, "Order distributed")
+		case "Delivered":
+			storage.SetInProgress(orderMessage.Courier.Id)
+		case "Order declined":
+			ProduceMessage(orderMessage, "Order declined by distribution")
 		}
 	}
 

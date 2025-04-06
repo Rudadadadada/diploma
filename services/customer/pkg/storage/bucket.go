@@ -2,7 +2,6 @@ package storage
 
 import (
 	"diploma/services/customer/pkg/models"
-	"log"
 )
 
 func InsertIntoBucket(customerId int, items map[int]int) error {
@@ -162,7 +161,6 @@ func GetChangesAndUpdate(currentOrderItems []models.BucketItem, orderId int, new
 		rows, err := db.Query(`select id, amount from bucket_items where id = $1`, product.Id)
 
 		if err != nil {
-			log.Print(err)
 			return nil, err
 		}
 
@@ -199,7 +197,6 @@ func GetChangesAndUpdate(currentOrderItems []models.BucketItem, orderId int, new
 		}
 	}
 
-	log.Print(newTotalCost)
 	_, err := db.Query(`update orders set total_cost = $1 where id = $2`, newTotalCost, orderId)
 	if err != nil {
 		return nil, err
@@ -214,9 +211,9 @@ func CheckOrderIsEmpty(orderId int) (*bool, error) {
 		return nil, err
 	}
 
-	var total_cost float32
+	var totalCost float32
 	for rows.Next() {
-		err = rows.Scan(&total_cost)
+		err = rows.Scan(&totalCost)
 		if err != nil {
 			return nil, err
 		}
@@ -227,7 +224,7 @@ func CheckOrderIsEmpty(orderId int) (*bool, error) {
 	}
 
 	isEmpty := false
-	if total_cost == 0 {
+	if totalCost == 0 {
 		isEmpty = true
 	}
 

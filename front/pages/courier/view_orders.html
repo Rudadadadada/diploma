@@ -3,7 +3,6 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Список заказов</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -211,27 +210,27 @@
 </head>
 
 <body>
-    <div class="container">
-        <h1><i class="fas fa-clipboard-list"></i> Список заказов</h1>
+    <div>
+        <h1><i class="fas fa-list"></i> Список заказов</h1>
 
         {{if .}}
         <table class="orders-table">
             <thead>
                 <tr>
-                    <th><i class="fas fa-hashtag"></i>Номер заказа</th>
-                    <th><i class="far fa-calendar-alt"></i>Время создания</th>
-                    <th><i class="fas fa-ruble-sign"></i>Стоимость</th>
-                    <th><i class="fas fa-eye"></i>Действия</th>
+                    <th><i class="fas fa-hashtag"></i> Номер заказа</th>
+                    <th><i class="fas fa-calendar-alt"></i> Время создания</th>
+                    <th><i class="fas fa-money-bill-wave"></i> Стоимость</th>
+                    <th><i class="fas fa-tasks"></i> Действия</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="orders-tbody">
                 {{range .}}
-                <tr>
+                <tr data-order-id="{{.Id}}">
                     <td>#{{.Id}}</td>
-                    <td>{{.CreatedAt}}</td>
+                    <td>{{.CreatedAtStr}}</td>
                     <td>{{.TotalCost}} ₽</td>
                     <td>
-                        <div class="btn-group">
+                        <div>
                             <button type="button" class="btn btn-small view-order-items-button" data-order-id="{{.Id}}">
                                 <i class="fas fa-eye"></i> Подробнее
                             </button>
@@ -260,28 +259,39 @@
     </div>
 
     <script>
-        // Добавление обработчиков событий для кнопок
-        document.querySelectorAll('.view-order-items-button').forEach(button => {
-            button.addEventListener('click', function () {
-                const orderId = parseInt(this.dataset.orderId, 10);
+        document.addEventListener('DOMContentLoaded', function () {
+            function viewOrders() {
+                fetch('/courier/view_orders');
+                setTimeout(() => {
+                    viewOrders();
+                    location.reload();
+                }, 5000);
+            }
 
-                const queryParams = new URLSearchParams({
-                    order_id: orderId,
+            viewOrders();
+
+            document.querySelectorAll('.view-order-items-button').forEach(button => {
+                button.addEventListener('click', function () {
+                    const orderId = parseInt(this.dataset.orderId, 10);
+
+                    const queryParams = new URLSearchParams({
+                        order_id: orderId,
+                    });
+
+                    window.location.href = `/courier/view_orders/view_order_items?${queryParams.toString()}`;
                 });
-
-                window.location.href = `/courier/view_orders/view_order_items?${queryParams.toString()}`;
             });
-        });
 
-        document.querySelectorAll('.take-order-button').forEach(button => {
-            button.addEventListener('click', function () {
-                const orderId = parseInt(this.dataset.orderId, 10);
+            document.querySelectorAll('.take-order-button').forEach(button => {
+                button.addEventListener('click', function () {
+                    const orderId = parseInt(this.dataset.orderId, 10);
 
-                const queryParams = new URLSearchParams({
-                    order_id: orderId,
+                    const queryParams = new URLSearchParams({
+                        order_id: orderId,
+                    });
+
+                    window.location.href = `/courier/take_order?${queryParams.toString()}`;
                 });
-
-                window.location.href = `/courier/take_order?${queryParams.toString()}`;
             });
         });
     </script>

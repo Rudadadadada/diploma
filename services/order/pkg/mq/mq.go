@@ -23,7 +23,7 @@ func New() {
 		"enable.auto.commit": true,
 	})
 
-	topics := []string{"customer", "distribution", "admin"}
+	topics := []string{"customer", "distribution", "admin", "courier"}
 	Consumer.SubscribeTopics(topics, nil)
 }
 
@@ -85,6 +85,18 @@ func ParseMessageAndProduce(msg *kafka.Message) error {
 		ProduceMessage(orderMessage, "Order distributed")
 	case "Order collected":
 		ProduceMessage(orderMessage, "Order collected")
+	case "Order taken from shop":
+		orderMessage.Status = "order taken from shop"
+		ProduceMessage(orderMessage, "Order taken from shop")
+	case "Delivered":
+		orderMessage.Status = "order delivered"
+		ProduceMessage(orderMessage, "Order delivered")
+	case "Order declined":
+		orderMessage.Status = "order declined"
+		ProduceMessage(orderMessage, "Order declined")
+	case "Declined by courier":
+		orderMessage.Status = "declined by courier"
+		ProduceMessage(orderMessage, "Declined by courier")
 	}
 
 	return nil

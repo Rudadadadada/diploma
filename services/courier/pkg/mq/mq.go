@@ -110,12 +110,45 @@ func ParseMessageAndProduce(msg *kafka.Message) error {
 		if err != nil {
 			return err
 		}
+
 		if status == "order declined" {
 			return nil
 		}
-		err = storage.UpdateOrderStatus(orderMessage.OrderId, "order collected")
+
+		ptrChanged, err := storage.GetChangesAndUpdate(orderMessage.OrderItems, orderMessage.OrderId, int(orderMessage.TotalCost))
 		if err != nil {
+			log.Print("err1")
+			log.Print(err)
 			return err
+		}
+
+		var changed bool
+		if ptrChanged != nil {
+			changed = *ptrChanged
+		}
+
+		log.Print(changed)
+
+		if !changed {
+			storage.UpdateOrderStatus(orderMessage.OrderId, "order collected")
+		} else {
+			ptrIsEmpty, err := storage.CheckOrderIsEmpty(orderMessage.OrderId)
+			if err != nil {
+				log.Print("err2")
+				log.Print(err)
+				return err
+			}
+
+			var isEmpty bool
+			if ptrIsEmpty != nil {
+				isEmpty = *ptrIsEmpty
+			}
+
+			if !isEmpty {
+				storage.UpdateOrderStatus(orderMessage.OrderId, "order collected with some changes")
+			} else {
+				storage.UpdateOrderStatus(orderMessage.OrderId, "order declined")
+			}
 		}
 	case "Order declined by distribution":
 		err := storage.DeclineOrder(orderMessage.OrderId)

@@ -16,7 +16,7 @@ func TranslateStatusToRussian(status string) string {
 		"order taken from shop":             "Курьер забрал заказ и направляется к вам",
 		"order delivered":                   "Заказ доставлен",
 		"order declined":                    "Заказ отменен",
-		"declined by courier":               "Курьер отменил выполнение заказа.",
+		"declined by courier":               "Курьер отменил выполнение заказа",
 	}
 	return statusMap[status]
 }

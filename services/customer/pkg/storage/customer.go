@@ -175,7 +175,7 @@ func UpdateStatus(orderId int, status string) error {
 		return err
 	}
 
-	if statusDb == "order declined" || statusDb == "declined by courier" {
+	if statusDb == "order declined" || statusDb == "declined by courier" || statusDb == "declined because no products left" {
 		return nil
 	}
 

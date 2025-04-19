@@ -4,8 +4,9 @@ import (
 	"diploma/services/customer/pkg/models"
 	"diploma/services/customer/pkg/storage"
 	"encoding/json"
-	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"log"
+
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 var Producer *kafka.Producer

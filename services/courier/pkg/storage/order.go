@@ -50,7 +50,7 @@ func ViewOrders() ([]models.Order, error) {
 			total_cost,
 			created_at,
 			status
-		from orders where took = false and status != 'delivered' and status != 'order declined'`,
+		from orders where took = false and status != 'delivered' and status != 'order declined' order by id`,
 	)
 
 	if err != nil {
@@ -283,4 +283,81 @@ func DeclineOrder(orderId int) error {
 	}
 
 	return nil
+}
+
+func GetChangesAndUpdate(currentOrderItems []models.BucketItem, orderId int, newTotalCost int) (*bool, error) {
+	var previousOrderItems []models.BucketItem
+
+	for _, product := range currentOrderItems {
+		rows, err := db.Query(`select id, amount from order_items where id = $1`, product.Id)
+
+		if err != nil {
+			return nil, err
+		}
+
+		for rows.Next() {
+			var tmp models.BucketItem
+			err = rows.Scan(&tmp.Id, &tmp.Amount)
+			if err != nil {
+				return nil, err
+			}
+
+			previousOrderItems = append(previousOrderItems, tmp)
+		}
+
+		if err = rows.Close(); err != nil {
+			return nil, err
+		}
+	}
+
+	changed := false
+	for i := 0; i < len(currentOrderItems); i++ {
+		if currentOrderItems[i].Amount == previousOrderItems[i].Amount {
+			continue
+		}
+
+		changed = true
+		_, err := db.Query(`
+			update order_items 
+			set amount = $1 
+			where id = $2`, currentOrderItems[i].Amount, currentOrderItems[i].Id,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err := db.Query(`update orders set total_cost = $1 where id = $2`, newTotalCost, orderId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &changed, nil
+}
+
+func CheckOrderIsEmpty(orderId int) (*bool, error) {
+	rows, err := db.Query(`select total_cost from orders where id = $1`, orderId)
+	if err != nil {
+		return nil, err
+	}
+
+	var totalCost float32
+	for rows.Next() {
+		err = rows.Scan(&totalCost)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if err = rows.Close(); err != nil {
+		return nil, err
+	}
+
+	isEmpty := false
+	if totalCost == 0 {
+		isEmpty = true
+	}
+
+	return &isEmpty, nil
 }

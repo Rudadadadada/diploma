@@ -356,7 +356,7 @@ func TakeOrderFromShop(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if status != "order collected" {
+	if (status != "order collected" && status != "order collected with some changes") {
 		tmpl, err := template.ParseFiles("front/pages/courier/not_yet.html")
 		if err != nil {
 			http.Error(w, err.Error(), 400)

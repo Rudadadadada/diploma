@@ -71,7 +71,6 @@
             border-radius: var(--border-radius);
             overflow: hidden;
             box-shadow: var(--shadow);
-            animation: fadeIn 0.5s ease-out;
         }
 
         .orders-table thead {
@@ -261,7 +260,8 @@
                                 data-order-id="{{.Id}}" data-bucket-id="{{.BucketId}}">
                                 <i class="fas fa-eye"></i> Подробнее
                             </button>
-                            <button class="btn btn-cancel btn-small" data-order-id="{{.Id}}" data-bucket-id="{{.BucketId}}">
+                            <button class="btn btn-cancel btn-small" data-order-id="{{.Id}}"
+                                data-bucket-id="{{.BucketId}}">
                                 <i class="fas fa-times"></i> Отменить
                             </button>
                         </div>
@@ -323,7 +323,10 @@
                     })
                     .catch(error => console.error('Ошибка при получении статусов:', error));
 
-                setTimeout(updateOrderStatuses, 5000);
+                setTimeout(() => {
+                    updateOrderStatuses();
+                    location.reload();
+                }, 5000);
             }
 
             updateOrderStatuses();
